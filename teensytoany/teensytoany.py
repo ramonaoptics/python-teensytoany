@@ -13,7 +13,15 @@ known_devices = [
     {
         'serial_number': '5032260',
         'device_name': 'teensytoany',
-    }
+    },
+    {
+        'serial_number': '4725070',
+        'device_name': 'teensytoany',
+    },
+    {
+        'serial_number': '4726520',
+        'device_name': 'teensytoany',
+    },
 ]
 
 known_serial_numbers = [
