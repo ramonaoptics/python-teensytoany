@@ -13,8 +13,8 @@ requirements = []
 test_requirements = ['pytest', ]
 
 setup(
-    author="Mark Harfouche",
-    author_email='mark@ramonaoptics.com',
+    author="Ramona Optics Inc.",
+    author_email='info@ramonaoptics.com',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
