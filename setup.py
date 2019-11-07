@@ -36,7 +36,7 @@ setup(
     name='teensytoany',
     packages=find_packages(include=['teensytoany']),
     tests_require=test_requirements,
-    url='https://github.com/ramonaoptics/teensytoany',
+    url='https://github.com/ramonaoptics/python-teensytoany',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     zip_safe=False,
