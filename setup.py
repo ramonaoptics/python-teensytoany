@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import versioneer
 from setuptools import setup, find_packages
 
 with open('README.md') as readme_file:
@@ -34,6 +35,7 @@ setup(
     packages=find_packages(include=['teensytoany']),
     tests_require=test_requirements,
     url='https://github.com/ramonaoptics/teensytoany',
-    version='0.0.1',
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     zip_safe=False,
 )
