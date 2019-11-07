@@ -252,8 +252,5 @@ class TeensyToAny:
         self._ask(f"gpio_pin_mode {pin} {mode}")
 
     def gpio_digital_read(self, pin):
-        if pin == 0:
-            pin = 17
-
         returned = self._ask(f"gpio_digital_read {pin}")
         return bool(int(returned, base=0))
