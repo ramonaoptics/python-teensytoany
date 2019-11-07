@@ -1,8 +1,8 @@
 # Python TeensyToAny
 
 
-[![pypi](https://img.shields.io/pypi/v/python_teensytoany.svg)](https://pypi.python.org/pypi/python_teensytoany)
-[![Travis](https://img.shields.io/travis/ramonaoptics/python_teensytoany.svg)](https://travis-ci.org/ramonaoptics/python_teensytoany)
+[![pypi](https://img.shields.io/pypi/v/teensytoany.svg)](https://pypi.python.org/pypi/teensytoany)
+[![Travis](https://img.shields.io/travis/ramonaoptics/python-teensytoany.svg)](https://travis-ci.org/ramonaoptics/python-teensytoany)
 [![Docs](https://readthedocs.org/projects/python-teensytoany/badge/?version=latest)](https://python-teensytoany.readthedocs.io/en/latest/?badge=latest)
 
 
