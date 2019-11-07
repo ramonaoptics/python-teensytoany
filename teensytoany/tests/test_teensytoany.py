@@ -1,6 +1,7 @@
-import python_teensytoany
-import pytest
+import teensytoany
+# import pytest
 
 
 def test_project_import():
-    pass
+    teensytoany.__version__
+    teensytoany.TeensyToAny
