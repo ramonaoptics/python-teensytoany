@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+from setuptools import setup, find_packages
+
+with open('README.md') as readme_file:
+    readme = readme_file.read()
+
+with open('HISTORY.md') as history_file:
+    history = history_file.read()
+
+requirements = [ ]
+
+test_requirements = ['pytest', ]
+
+setup(
+    author="Mark Harfouche",
+    author_email='mark@ramonaoptics.com',
+    classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ],
+    description="A pythonic way to access the teensytoany board",
+    install_requires=requirements,
+    license="BSD license",
+    long_description=readme + '\n\n' + history,
+    include_package_data=True,
+    keywords='python_teensytoany',
+    name='python_teensytoany',
+    packages=find_packages(include=['python_teensytoany']),
+    tests_require=test_requirements,
+    url='https://github.com/hmaarrfk/python_teensytoany',
+    version='0.0.1',
+    zip_safe=False,
+)
