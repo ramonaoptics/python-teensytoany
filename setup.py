@@ -7,7 +7,7 @@ with open('README.md') as readme_file:
 with open('HISTORY.md') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = []
 
 test_requirements = ['pytest', ]
 
@@ -29,11 +29,11 @@ setup(
     license="BSD license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords='python_teensytoany',
-    name='python_teensytoany',
-    packages=find_packages(include=['python_teensytoany']),
+    keywords='teensytoany',
+    name='teensytoany',
+    packages=find_packages(include=['teensytoany']),
     tests_require=test_requirements,
-    url='https://github.com/hmaarrfk/python_teensytoany',
+    url='https://github.com/ramonaoptics/teensytoany',
     version='0.0.1',
     zip_safe=False,
 )
