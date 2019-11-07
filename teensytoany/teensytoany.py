@@ -10,6 +10,10 @@ known_devices = [
         'serial_number': '4725230',
         'device_name': 'teensytoany',
     },
+    {
+        'serial_number': '5032260',
+        'device_name': 'teensytoany',
+    }
 ]
 
 known_serial_numbers = [
@@ -155,7 +159,7 @@ class TeensyToAny:
             string of data read.
 
         """
-        data = self._serial.read_until(expected=LF, size=size)
+        data = self._serial.read_until(terminator=LF, size=size)
         if decode:
             return data.decode()
         else:
