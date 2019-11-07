@@ -2,7 +2,7 @@
 
 
 [![pypi](https://img.shields.io/pypi/v/python_teensytoany.svg)](https://pypi.python.org/pypi/python_teensytoany)
-[![Travis](https://img.shields.io/travis/hmaarrfk/python_teensytoany.svg)](https://travis-ci.org/hmaarrfk/python_teensytoany)
+[![Travis](https://img.shields.io/travis/ramonaoptics/python_teensytoany.svg)](https://travis-ci.org/ramonaoptics/python_teensytoany)
 [![Docs](https://readthedocs.org/projects/python-teensytoany/badge/?version=latest)](https://python-teensytoany.readthedocs.io/en/latest/?badge=latest)
 
 
@@ -10,7 +10,7 @@ A pythonic way to access the teensytoany board
 
 
 * Documentation: https://python-teensytoany.readthedocs.io.
-
+* See: https://github.com/hmaarrfk/teensy-to-any
 
 Features
 --------
