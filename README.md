@@ -10,7 +10,7 @@ A pythonic way to access the teensytoany board
 
 
 * Documentation: https://python-teensytoany.readthedocs.io.
-* See: https://github.com/hmaarrfk/teensy-to-any
+* See: https://github.com/ramonaoptics/teensy-to-any
 
 Features
 --------
