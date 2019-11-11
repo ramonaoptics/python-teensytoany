@@ -135,7 +135,7 @@ class TeensyToAny:
 
         """
 
-        self._serial_number = serial_number
+        self._requested_serial_number = serial_number
         self._baudrate = baudrate
         self._timeout = timeout
         self._serial = None
@@ -143,20 +143,24 @@ class TeensyToAny:
             self._open()
 
     def _open(self):
-        if self._serial_number is None:
+        if self._requested_serial_number is None:
             serial_numbers = self._known_serial_numbers
         else:
-            serial_numbers = [self._serial_number]
+            serial_numbers = [self._requested_serial_number]
 
-        port = self.find(serial_numbers)[0]
+        port, found_serial_number = self._device_serial_number_pairs(
+            serial_numbers=serial_numbers)[0]
+
         self._serial = Serial(
             port=port, baudrate=self._baudrate, timeout=self._timeout)
+        self.serial_number = found_serial_number
 
     def _close(self):
         if self._serial is not None:
             self._serial.close()
 
         self._serial = None
+        self.serial_number = None
 
     def __del__(self):
         # Do we want to call close on this delete instance????
