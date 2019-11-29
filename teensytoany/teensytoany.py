@@ -4,6 +4,9 @@ from serial import Serial, LF
 from serial.tools.list_ports import comports
 from os import strerror
 
+__all__ = ['TeensyToAny', 'known_devices', 'known_serial_numbers']
+
+
 known_devices = [
     # Example device structure
     # These include useful information about the hardware that is created and

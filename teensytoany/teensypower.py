@@ -1,5 +1,8 @@
 from teensytoany import TeensyToAny
 
+__all__ = ['TeensyPower']
+
+
 class TeensyPower():
     def __init__(self, pin_number=13, **kwargs):
         """Open an AC power switch controlled by a Teensy microcontroller.
