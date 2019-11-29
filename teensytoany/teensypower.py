@@ -22,6 +22,16 @@ class TeensyPower():
         self._teensy.gpio_pin_mode(self.pin_number, 'OUTPUT')
         self.poweroff()
 
+        self.auto_poweroff = True
+
+    def __del__(self):
+        self._close()
+
+    def _close(self):
+        if self.auto_poweroff:
+            self.poweroff()
+        self._teensy.close()
+
     def poweron(self):
         """Turn the power outlet on.
 
