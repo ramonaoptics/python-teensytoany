@@ -1,5 +1,10 @@
 # History
 
+## 0.0.15 (2019-11-29)
+
+* `TeensyPower` devices will automatically poweroff the output when
+  closed.
+
 ## 0.0.14 (2019-11-29)
 
 * Added the specialized `TeensyPower` driver.
