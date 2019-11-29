@@ -6,4 +6,5 @@
 
 ## Contributors
 
-None yet. Why not be the first?
+* Jaehee Park <jaehee@ramonaoptics.com>
+* You are welcome to join!
