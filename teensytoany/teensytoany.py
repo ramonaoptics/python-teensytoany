@@ -1,4 +1,3 @@
-import logging
 from typing import Sequence
 
 from serial import Serial, LF
@@ -128,8 +127,8 @@ class TeensyToAny:
         ]
         if len(pairs) == 0:
             raise RuntimeError(
-                    "Could not find any device for provided serial number: "
-                    f"{serial_numbers}.")
+                "Could not find any device for provided serial number: "
+                f"{serial_numbers}.")
         return pairs
 
     def __init__(self, serial_number=None, *,
@@ -222,8 +221,10 @@ class TeensyToAny:
             message = message.strip()
         return message
 
-    def i2c_write_read(self, address: int, data: Sequence, num_bytes: int,
-                       *, retry=10, retry_sleep=0.01) -> Sequence:
+    def i2c_write_read(self,
+                       address: int,
+                       data: Sequence,
+                       num_bytes: int) -> Sequence:
         if len(data) != 2:
             raise ValueError("data must be of length 2")
         if num_bytes not in [1, 2]:
@@ -244,7 +245,7 @@ class TeensyToAny:
             length=num_bytes, byteorder='big',
             signed=False)
 
-    def i2c_write_payload(self, address, payload):
+    def i2c_write_payload(self, address: int, payload: Sequence) -> None:
         if len(payload) == 1:
             # Trying to write the network chips
             data = int(payload[0])
@@ -270,7 +271,7 @@ class TeensyToAny:
         else:
             raise NotImplementedError()
 
-    def i2c_read_bytes(self, address, num_bytes=1):
+    def i2c_read_bytes(self, address: int, num_bytes: int=1) -> Sequence:
         if num_bytes != 1:
             raise NotImplementedError()
         returned = self._ask(f"i2c_read_no_register_uint8 0x{address:02x}")
