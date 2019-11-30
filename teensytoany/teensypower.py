@@ -17,12 +17,15 @@ class TeensyPower():
             constructor.
 
         """
-        self._teensy = TeensyToAny(**kwargs)
+        # auto_poweroff is used in the destructor. create it first
+        # initialize other used variables to safe values
+        self.auto_poweroff = True
+        self._teensy = None
         self.pin_number = pin_number
+
+        self._teensy = TeensyToAny(**kwargs)
         self._teensy.gpio_pin_mode(self.pin_number, 'OUTPUT')
         self.poweroff()
-
-        self.auto_poweroff = True
 
     def __del__(self):
         self._close()
@@ -30,7 +33,8 @@ class TeensyPower():
     def _close(self):
         if self.auto_poweroff:
             self.poweroff()
-        self._teensy.close()
+        if self._teensy is not None:
+            self._teensy.close()
 
     def poweron(self):
         """Turn the power outlet on.
