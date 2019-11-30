@@ -1,5 +1,10 @@
 # History
 
+## 0.0.17 (2019-11-30)
+
+* `TeensyPower` destructor will not raise an error when the device had failed
+   to open. (Finally fixed the bug correctly)
+
 ## 0.0.16 (2019-11-30)
 
 * `TeensyPower` destructor will not raise an error when the device had failed

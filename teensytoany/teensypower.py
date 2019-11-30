@@ -31,9 +31,9 @@ class TeensyPower():
         self._close()
 
     def _close(self):
-        if self.auto_poweroff:
-            self.poweroff()
         if self._teensy is not None:
+            if self.auto_poweroff:
+                self.poweroff()
             self._teensy.close()
 
     def poweron(self):
