@@ -1,5 +1,10 @@
 # History
 
+## 0.0.16 (2019-11-30)
+
+* `TeensyPower` destructor will not raise an error when the device had failed
+   to open.
+
 ## 0.0.15 (2019-11-29)
 
 * `TeensyPower` devices will automatically poweroff the output when
