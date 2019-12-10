@@ -34,7 +34,7 @@ class TeensyPower():
         if self.auto_poweroff:
             self.poweroff()
         if self._teensy is not None:
-            self._teensy.close()
+            self._teensy._close()
 
     def poweron(self):
         """Turn the power outlet on.
