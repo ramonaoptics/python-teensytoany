@@ -24,7 +24,7 @@ class TeensyPower():
         self.pin_number = pin_number
 
         self._teensy = TeensyToAny(**kwargs)
-        self._teensy.gpio_pin_mode(self.pin_number, 'OUTPUT')
+        self._teensy.gpio_pin_mode(self.pin_number, 1)
         self.poweroff()
 
     def __del__(self):
