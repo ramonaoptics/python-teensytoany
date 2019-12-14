@@ -338,6 +338,9 @@ class TeensyToAny:
     def spi_begin(self):
         self._ask("spi_begin")
 
+    def spi_end(self):
+        self._ask("spi_end")
+
     def spi_set_miso(self, pin):
         self._ask(f"spi_set_miso {pin}")
 
@@ -347,7 +350,10 @@ class TeensyToAny:
     def spi_set_sck(self, pin):
         self._ask(f"spi_set_sck {pin}")
 
-    def spi_settings(self, bit_order, data_mode):
+    def spi_settings(self,
+                     frequency: int=1_000_000,
+                     bit_order: str='MSBFIRST',
+                     data_mode: str='SPI_MODE0'):
         """
 
         Parameters
@@ -361,7 +367,7 @@ class TeensyToAny:
           2. https://www.arduino.cc/en/Reference/SPISetDataMode
 
         """
-        self._ask(f"spi_settings {bit_order} {data_mode}")
+        self._ask(f"spi_settings {frequency} {bit_order} {data_mode}")
 
     def spi_begin_transaction(self):
         self._ask("spi_begin_transaction")
@@ -374,3 +380,16 @@ class TeensyToAny:
 
     def spi_transfer_bulk(self, data):
         self._ask("spi_transfer_bulk " + " ".join(str(d) for d in data))
+
+    def analog_write_frequency(self, pin: int, frequency: int):
+        frequency = int(frequency)
+        self._ask(f"analog_write_frequency {pin} {frequency}")
+
+    def analog_write_resolution(self, resolution: int):
+        resolution = int(resolution)
+        self._ask(f"analog_write_resolution {resolution}")
+
+    def analog_write(self, pin: int, value: int):
+        # https://www.arduino.cc/reference/en/language/functions/analog-io/analogwrite/
+        value = int(value)
+        self._ask(f"analog_write {pin} {value}")
