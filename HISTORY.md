@@ -1,6 +1,6 @@
 # History
 
-## 0.0.17 (2019-12-14)
+## 0.0.20 (2019-12-14)
 
 * Added capabilities for SPI and Analog functions
 
