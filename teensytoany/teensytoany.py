@@ -37,6 +37,10 @@ known_devices = [
         'serial_number': '4728790',
         'device_name': 'teensytoany',
     },
+    {
+        'serial_number': '5955040',
+        'device_name': 'teensytoany',
+    },
 ]
 
 known_serial_numbers = [
@@ -326,3 +330,66 @@ class TeensyToAny:
         """
         returned = self._ask(f"gpio_digital_read {pin}")
         return bool(int(returned, base=0))
+
+    @property
+    def version(self):
+        return self._ask("version")
+
+    def spi_begin(self):
+        self._ask("spi_begin")
+
+    def spi_end(self):
+        self._ask("spi_end")
+
+    def spi_set_miso(self, pin):
+        self._ask(f"spi_set_miso {pin}")
+
+    def spi_set_mosi(self, pin):
+        self._ask(f"spi_set_mosi {pin}")
+
+    def spi_set_sck(self, pin):
+        self._ask(f"spi_set_sck {pin}")
+
+    def spi_settings(self,
+                     frequency: int=1_000_000,
+                     bit_order: str='MSBFIRST',
+                     data_mode: str='SPI_MODE0'):
+        """
+
+        Parameters
+        ----------
+        bit_order: 'MSBFIRST' or 'LSBFIRST'
+        data_mode: 'SPI_MODE0', 'SPI_MODE1', 'SPI_MODE2', or 'SPI_MODE3'
+
+        References
+        ----------
+          1. https://www.pjrc.com/teensy/td_libs_SPI.html
+          2. https://www.arduino.cc/en/Reference/SPISetDataMode
+
+        """
+        self._ask(f"spi_settings {frequency} {bit_order} {data_mode}")
+
+    def spi_begin_transaction(self):
+        self._ask("spi_begin_transaction")
+
+    def spi_end_transaction(self):
+        self._ask("spi_end_transaction")
+
+    def spi_transfer(self, data):
+        self._ask(f"spi_transfer {data}")
+
+    def spi_transfer_bulk(self, data):
+        self._ask("spi_transfer_bulk " + " ".join(str(d) for d in data))
+
+    def analog_write_frequency(self, pin: int, frequency: int):
+        frequency = int(frequency)
+        self._ask(f"analog_write_frequency {pin} {frequency}")
+
+    def analog_write_resolution(self, resolution: int):
+        resolution = int(resolution)
+        self._ask(f"analog_write_resolution {resolution}")
+
+    def analog_write(self, pin: int, value: int):
+        # https://www.arduino.cc/reference/en/language/functions/analog-io/analogwrite/
+        value = int(value)
+        self._ask(f"analog_write {pin} {value}")
