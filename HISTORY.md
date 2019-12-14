@@ -1,5 +1,9 @@
 # History
 
+## 0.0.17 (2019-12-14)
+
+* Added capabilities for SPI and Analog functions
+
 ## 0.0.16 (2019-11-30)
 
 * `TeensyPower` destructor will not raise an error when the device had failed
