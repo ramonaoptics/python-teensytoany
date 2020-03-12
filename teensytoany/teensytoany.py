@@ -228,6 +228,30 @@ class TeensyToAny:
             message = message.strip()
         return message
 
+    def i2c_init(self, baud_rate: int=100_100, timeout=200_000, register_space=1):
+        cmd = f"i2c_init {baud_rate:d} {timeout:d} {register_space:d}"
+        self._ask(cmd)
+
+    def i2c_read_uint8(self, address: int, register_address: int):
+        cmd = f"i2c_read_uint8 0x{address:02x} 0x{register_address:x}"
+        returned = self._ask(cmd)
+        return int(returned, base=0)
+
+    def i2c_read_uint16(self, address: int, register_address: int):
+        cmd = f"i2c_read_uint16 0x{address:02x} 0x{register_address:x}"
+        returned = self._ask(cmd)
+        return int(returned, base=0)
+
+    def i2c_write_uint8(self, address: int, register_address: int, data: int):
+        data = data & 0xFF
+        cmd = f"i2c_write_uint8 0x{address:02x} 0x{register_address:x} 0x{data:x}"
+        self._ask(cmd)
+
+    def i2c_write_uint16(self, address: int, register_address: int, data: int):
+        data = data & 0xFFFF
+        cmd = f"i2c_write_uint16 0x{address:02x} 0x{register_address:x} 0x{data:x}"
+        self._ask(cmd)
+
     def i2c_write_read(self,
                        address: int,
                        data: Sequence,
