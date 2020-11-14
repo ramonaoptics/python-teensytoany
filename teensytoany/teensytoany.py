@@ -391,19 +391,19 @@ class TeensyToAny:
           2. https://www.arduino.cc/en/Reference/SPISetDataMode
 
         """
-        self._ask(f"spi_settings {frequency} {bit_order} {data_mode}")
+        return self._ask(f"spi_settings {frequency} {bit_order} {data_mode}")
 
     def spi_begin_transaction(self):
-        self._ask("spi_begin_transaction")
+        return self._ask("spi_begin_transaction")
 
     def spi_end_transaction(self):
-        self._ask("spi_end_transaction")
+        return self._ask("spi_end_transaction")
 
     def spi_transfer(self, data):
-        self._ask(f"spi_transfer {data}")
+        return self._ask(f"spi_transfer {data}")
 
     def spi_transfer_bulk(self, data):
-        self._ask("spi_transfer_bulk " + " ".join(str(d) for d in data))
+        return self._ask("spi_transfer_bulk " + " ".join(str(d) for d in data))
 
     def analog_write_frequency(self, pin: int, frequency: int):
         frequency = int(frequency)
