@@ -1,5 +1,10 @@
 # History
 
+## 0.0.23 (Unreleased)
+
+* Added the ability to close and open the device without deleting the python
+  object.
+
 ## 0.0.22 (2020-06-18)
 
 * Added the ability to control a power switch that is connected to the
