@@ -154,9 +154,9 @@ class TeensyToAny:
         self._timeout = timeout
         self._serial = None
         if open:
-            self._open()
+            self.open()
 
-    def _open(self):
+    def open(self):
         if self._requested_serial_number is None:
             serial_numbers = self._known_serial_numbers
         else:
@@ -169,7 +169,7 @@ class TeensyToAny:
             port=port, baudrate=self._baudrate, timeout=self._timeout)
         self.serial_number = found_serial_number
 
-    def _close(self):
+    def close(self):
         if self._serial is not None:
             self._serial.close()
 
@@ -178,7 +178,7 @@ class TeensyToAny:
 
     def __del__(self):
         # Do we want to call close on this delete instance????
-        self._close()
+        self.close()
 
     def _write(self, data) -> None:
         """Write data to the port.

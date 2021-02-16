@@ -4,7 +4,7 @@ __all__ = ['TeensyPower']
 
 
 class TeensyPower():
-    def __init__(self, pin_number=13, *, nominally_off=True, **kwargs):
+    def __init__(self, pin_number=13, *, nominally_off=True, open=True, **kwargs):
         """Open an AC power switch controlled by a Teensy microcontroller.
 
         Parameters
@@ -24,18 +24,23 @@ class TeensyPower():
         self._nominally_off = bool(nominally_off)
         self.pin_number = pin_number
 
-        self._teensy = TeensyToAny(**kwargs)
+        self._teensy = TeensyToAny(open=open, **kwargs)
+        if open:
+            self.open()
+
+    def open(self):
+        self._teensy.open()
         self._teensy.gpio_pin_mode(self.pin_number, 1)
         self.poweroff()
 
     def __del__(self):
-        self._close()
+        self.close()
 
-    def _close(self):
+    def close(self):
         if self._teensy is not None:
             if self.auto_poweroff:
                 self.poweroff()
-            self._teensy._close()
+            self._teensy.close()
 
     def poweron(self):
         """Turn the power outlet on.
