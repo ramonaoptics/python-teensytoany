@@ -205,7 +205,7 @@ class TeensyToAny:
         if self._serial is None:
             raise RuntimeError("Device must be opened first")
 
-        data = self._serial.read_until(terminator=LF, size=size)
+        data = self._serial.read_until(LF, size=size)
         if decode:
             return data.decode()
         else:

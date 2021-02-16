@@ -1,7 +1,8 @@
 # History
 
-## 0.0.23 (Unreleased)
+## 0.0.23 (2021-02-13)
 
+* Ensure compatibility with pyserial 3.X
 * Added the ability to close and open the device without deleting the python
   object.
 
