@@ -3,6 +3,8 @@
 ## 0.0.23 (2021-02-13)
 
 * Ensure compatibility with pyserial 3.X
+* Power a ``start_poweroff`` parameter to ``TeensyPower`` to start the device
+  in the on state.
 * Added the ability to close and open the device without deleting the python
   object.
 

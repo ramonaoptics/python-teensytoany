@@ -4,13 +4,24 @@ __all__ = ['TeensyPower']
 
 
 class TeensyPower():
-    def __init__(self, pin_number=13, *, nominally_off=True, open=True, **kwargs):
+    def __init__(self, pin_number=13, *,
+                 nominally_off=True, open=True, start_poweroff=True, **kwargs):
         """Open an AC power switch controlled by a Teensy microcontroller.
 
         Parameters
-        ==========
+        ----------
         pin_number:
             The pin number on the teensy that is used to control the switch.
+
+        nominally_off: bool
+            If your device is connected to the nominally off port, set this to
+            ``True``. If it is connected to the nominally on port, set this to
+            ``False``.
+
+        start_poweroff: bool
+            If ``True``, the device will set the power to the off state upon
+            startup. If ``False`` the device will set the power to the on
+            state upon startup.
 
         **kwargs:
             Additional keyword arguments are passed to the ``TeensyToAny``
@@ -26,12 +37,26 @@ class TeensyPower():
 
         self._teensy = TeensyToAny(open=open, **kwargs)
         if open:
-            self.open()
+            self.open(start_poweroff=start_poweroff)
 
-    def open(self):
+    def open(self, *, start_poweroff=True):
+        """Open the device.
+
+        Parameters
+        ----------
+
+        start_poweroff: bool
+            If ``True``, the device will set the power to the off state upon
+            startup. If ``False`` the device will set the power to the on
+            state upon startup.
+
+        """
         self._teensy.open()
         self._teensy.gpio_pin_mode(self.pin_number, 1)
-        self.poweroff()
+        if start_poweroff:
+            self.poweroff()
+        else:
+            self.poweron()
 
     def __del__(self):
         self.close()
@@ -46,9 +71,9 @@ class TeensyPower():
     def poweron(self):
         """Turn the power outlet on.
 
-        The outlets denoted `Nominally Off` will turn **on**.
+        The outlets denoted ``Nominally Off`` will turn **on**.
 
-        The outlets denoted `Nominally On` will turn **off**.
+        The outlets denoted ``Nominally On`` will turn **off**.
         """
         write_value = int(self._nominally_off)
         self._teensy.gpio_digital_write(self.pin_number, write_value)
@@ -56,9 +81,9 @@ class TeensyPower():
     def poweroff(self):
         """Turn the power outlet on.
 
-        The outlets denoted `Nominally Off` will turn **off**.
+        The outlets denoted ``Nominally Off`` will turn **off**.
 
-        The outlets denoted `Nominally On` will turn **on**.
+        The outlets denoted ``Nominally On`` will turn **on**.
         """
         write_value = int(not self._nominally_off)
         self._teensy.gpio_digital_write(self.pin_number, write_value)
