@@ -276,7 +276,14 @@ class TeensyToAny:
             length=num_bytes, byteorder='big',
             signed=False)
 
-    def i2c_write_payload(self, address: int, payload: Sequence) -> None:
+    def i2c_write_payload(self, address: int, register_address: int, payload: Sequence) -> None:
+
+        data =  ' '.join([f"0x{val:02x}" for val in payload])
+        cmd = f"i2c_write_payload 0x{address:02x} 0x{register_address:02x} {data}"
+        self._ask(cmd)
+
+        # Obsolete
+        """
         if len(payload) == 1:
             # Trying to write the network chips
             data = int(payload[0])
@@ -301,7 +308,17 @@ class TeensyToAny:
                 f"0x{address:02x} 0x{register_address:04x} 0x{data:04x}")
         else:
             raise NotImplementedError()
+        """
 
+    def i2c_read_payload(self, address: int, register_address: int, num_bytes: int) -> Sequence:
+
+        cmd = f"i2c_read_payload 0x{address:02x} 0x{register_address:02x} {num_bytes}"
+        returned = self._ask(cmd)
+        register_data = [int(val, base=0) for val in returned.split()] # returns big endian
+        return register_data
+
+    # Obsolete
+    """
     def i2c_read_bytes(self, address: int, num_bytes: int=1) -> Sequence:
         if num_bytes != 1:
             raise NotImplementedError()
@@ -311,6 +328,7 @@ class TeensyToAny:
             int(register_data),
             length=num_bytes, byteorder='big',
             signed=False)
+    """
 
     def gpio_digital_write(self, pin, value):
         """Call the ardunio DigitalWrite function.
