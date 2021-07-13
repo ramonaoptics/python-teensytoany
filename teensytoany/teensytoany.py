@@ -434,3 +434,20 @@ class TeensyToAny:
         # https://www.arduino.cc/reference/en/language/functions/analog-io/analogwrite/
         value = int(value)
         self._ask(f"analog_write {pin} {value}")
+
+    def analog_read(self, pin: int):
+        """Call the arduino analogRead function.
+
+        Parameters
+        ----------
+        pin: int
+            Pin number to read.
+
+        Returns
+        -------
+        value: int, (0-255)
+            Read value.
+
+        """
+        returned = self._ask(f"analog_read {pin}")
+        return int(returned, base=0)
