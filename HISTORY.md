@@ -1,5 +1,9 @@
 # History
 
+## 0.0.25 (2021-07-14)
+
+* added function `analog_read` enabling the user to read analog signals.
+
 ## 0.0.24 (2021-06-03)
 
 * added `i2c_read_payload and` `i2c_write_payload functions` which allows users to read and write a contiguous payload of bytes
