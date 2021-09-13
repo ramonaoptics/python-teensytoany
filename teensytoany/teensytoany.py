@@ -309,7 +309,7 @@ class TeensyToAny:
                     f"0x{address:02x} 0x{register_address:04x} 0x{data:04x}")
             else:
                 raise NotImplementedError()
-        
+
 
     def i2c_read_payload(self, address: int, register_address: int, num_bytes: int) -> Sequence:
 
@@ -328,7 +328,7 @@ class TeensyToAny:
                 int(register_data),
                 length=num_bytes, byteorder='big',
                 signed=False)
-    
+
     def gpio_digital_write(self, pin, value):
         """Call the ardunio DigitalWrite function.
 
@@ -421,6 +421,11 @@ class TeensyToAny:
 
     def spi_transfer_bulk(self, data):
         return self._ask("spi_transfer_bulk " + " ".join(str(d) for d in data))
+
+    def spi_read_byte(self, data):
+        cmd = f"spi_read_byte {data}"
+        value = self._ask(cmd)
+        return int(value, base=0)
 
     def analog_write_frequency(self, pin: int, frequency: int):
         frequency = int(frequency)
