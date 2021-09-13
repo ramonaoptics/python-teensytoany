@@ -1,5 +1,9 @@
 # History
 
+## 0.0.26 (2021-09-13)
+
+* added function `spi_read_byte` enabling the user to read SPI register.
+
 ## 0.0.25 (2021-07-14)
 
 * added function `analog_read` enabling the user to read analog signals.
