@@ -423,8 +423,20 @@ class TeensyToAny:
         return self._ask("spi_transfer_bulk " + " ".join(str(d) for d in data))
 
     def spi_read_byte(self, data):
-        cmd = f"spi_read_byte {data}"
-        value = self._ask(cmd)
+        """Read a byte of data over SPI.
+
+        Parameters
+        ----------
+        data: int
+            Command or register address to send before reading.
+
+        Returns
+        -------
+        value: int, (0-255)
+            Read value.
+
+        """
+        value = self._ask(f"spi_read_byte {data}")
         return int(value, base=0)
 
     def analog_write_frequency(self, pin: int, frequency: int):
