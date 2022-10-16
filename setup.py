@@ -22,7 +22,7 @@ with open('README.md') as readme_file:
 with open('HISTORY.md') as history_file:
     history = history_file.read()
 
-requirements = ['pyserial', ]
+requirements = ['pyserial', 'packaging', ]
 
 test_requirements = ['pytest', ]
 
