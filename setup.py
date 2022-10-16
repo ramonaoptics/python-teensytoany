@@ -14,7 +14,7 @@ def get_version_and_cmdclass(pkg_path):
     return module.__version__, module.get_cmdclass(pkg_path)
 
 
-version, cmdclass = get_version_and_cmdclass('my_package')
+version, cmdclass = get_version_and_cmdclass('teensytoany')
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
