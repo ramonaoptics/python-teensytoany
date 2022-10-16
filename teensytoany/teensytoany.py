@@ -280,7 +280,7 @@ class TeensyToAny:
     def i2c_write_payload(self, address: int, register_address: int, payload: Sequence) -> None:
 
         if self.version >= Version("0.0.14"):
-            data =  ' '.join([f"0x{val:02x}" for val in payload])
+            data = ' '.join([f"0x{val:02x}" for val in payload])
             cmd = f"i2c_write_payload 0x{address:02x} 0x{register_address:02x} {data}"
             self._ask(cmd)
 
@@ -310,13 +310,12 @@ class TeensyToAny:
             else:
                 raise NotImplementedError()
 
-
     def i2c_read_payload(self, address: int, register_address: int, num_bytes: int) -> Sequence:
 
         if self.version >= Version("0.0.14"):
             cmd = f"i2c_read_payload 0x{address:02x} 0x{register_address:02x} {num_bytes}"
             returned = self._ask(cmd)
-            register_data = [int(val, base=0) for val in returned.split()] # returns big endian
+            register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
             return register_data
 
         else:

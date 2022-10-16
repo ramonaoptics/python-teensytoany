@@ -3,6 +3,7 @@
 from teensytoany import TeensyPower
 import pytest
 
+
 def test_contructor_bad_device():
     with pytest.raises(RuntimeError, match="Could not find any device*"):
         _ = TeensyPower(serial_number='123213')
