@@ -1,5 +1,9 @@
 # History
 
+## 0.0.27 (2022-10-16)
+
+* Use packaging instead of distutils for version identification
+
 ## 0.0.26 (2021-09-13)
 
 * added function `spi_read_byte` enabling the user to read SPI register.
