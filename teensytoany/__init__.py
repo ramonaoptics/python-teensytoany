@@ -4,10 +4,10 @@ __author__ = 'Ramona Optics'
 __email__ = 'info@ramonaoptics.com'
 from .teensytoany import TeensyToAny
 from .teensypower import TeensyPower
+from ._version import __version__  # noqa
 
-__all__ = ['TeensyToAny',
-           'TeensyPower', ]
+__all__ = [
+    'TeensyToAny',
+    'TeensyPower',
+]
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
