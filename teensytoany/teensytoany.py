@@ -3,7 +3,7 @@ from typing import Sequence
 from serial import Serial, LF
 from serial.tools.list_ports import comports
 from os import strerror
-from distutils.version import LooseVersion as Version
+from packaging.version import Version
 
 __all__ = ['TeensyToAny', 'known_devices', 'known_serial_numbers']
 
@@ -278,8 +278,7 @@ class TeensyToAny:
             signed=False)
 
     def i2c_write_payload(self, address: int, register_address: int, payload: Sequence) -> None:
-
-        if self.version >= Version("0.0.14"):
+        if Version(self.version) >= Version("0.0.14"):
             data = ' '.join([f"0x{val:02x}" for val in payload])
             cmd = f"i2c_write_payload 0x{address:02x} 0x{register_address:02x} {data}"
             self._ask(cmd)
@@ -312,7 +311,7 @@ class TeensyToAny:
 
     def i2c_read_payload(self, address: int, register_address: int, num_bytes: int) -> Sequence:
 
-        if self.version >= Version("0.0.14"):
+        if Version(self.version) >= Version("0.0.14"):
             cmd = f"i2c_read_payload 0x{address:02x} 0x{register_address:02x} {num_bytes}"
             returned = self._ask(cmd)
             register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
