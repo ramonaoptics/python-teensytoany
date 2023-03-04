@@ -5,5 +5,5 @@ import pytest
 
 
 def test_contructor_bad_device():
-    with pytest.raises(RuntimeError, match="Could not find any device*"):
+    with pytest.raises(RuntimeError, match="Could not find any TeensyToAny device."):
         _ = TeensyPower(serial_number='123213')
