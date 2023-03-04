@@ -66,6 +66,7 @@ class TeensyToAny:
         (0x16C0, 0x0483),
     ]
 
+    _device_name = "TeensyToAny"
     _known_device = known_devices
     _known_serial_numbers = known_serial_numbers
 
@@ -97,7 +98,7 @@ class TeensyToAny:
         return devices
 
     @staticmethod
-    def list_all_serial_numbers(serial_numbers=None):
+    def list_all_serial_numbers(serial_numbers=None, *, device_name=None):
         """Find all the currently connected TeensyToAny serial numbers.
 
         Parameters
@@ -119,12 +120,14 @@ class TeensyToAny:
 
         """
         pairs = TeensyToAny._device_serial_number_pairs(
-            serial_numbers=serial_numbers)
+            serial_numbers=serial_numbers, device_name=device_name)
         _, serial_numbers = zip(*pairs)
         return serial_numbers
 
     @staticmethod
-    def _device_serial_number_pairs(serial_numbers=None):
+    def _device_serial_number_pairs(serial_numbers=None, *, device_name=None):
+        if device_name is None:
+            device_name = TeensyToAny._device_name
         com = comports()
         pairs = [
             (c.device, c.serial_number)
@@ -135,8 +138,8 @@ class TeensyToAny:
         ]
         if len(pairs) == 0:
             raise RuntimeError(
-                "Could not find any device for provided serial number: "
-                f"{serial_numbers}.")
+                f"Could not find any {device_name} device."
+            )
         return pairs
 
     def __init__(self, serial_number=None, *,
@@ -164,7 +167,7 @@ class TeensyToAny:
             serial_numbers = [self._requested_serial_number]
 
         port, found_serial_number = self._device_serial_number_pairs(
-            serial_numbers=serial_numbers)[0]
+            serial_numbers=serial_numbers, device_name=self._device_name)[0]
 
         self._serial = Serial(
             port=port, baudrate=self._baudrate, timeout=self._timeout)
