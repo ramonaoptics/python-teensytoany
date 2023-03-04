@@ -1,5 +1,9 @@
 # History
 
+## 0.0.28 (2023-03-04)
+
+* Make the error message when no device is found more human friendly.
+
 ## 0.0.27 (2022-10-16)
 
 * Use packaging instead of distutils for version identification
