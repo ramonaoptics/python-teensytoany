@@ -157,10 +157,18 @@ class TeensyToAny:
         self._baudrate = baudrate
         self._timeout = timeout
         self._serial = None
+        self._version = None
         if open:
             self.open()
 
     def open(self):
+        try:
+            self._open()
+        except Exception as e:
+            self.close()
+            raise e
+
+    def _open(self):
         if self._requested_serial_number is None:
             serial_numbers = self._known_serial_numbers
         else:
@@ -173,12 +181,29 @@ class TeensyToAny:
             port=port, baudrate=self._baudrate, timeout=self._timeout)
         self.serial_number = found_serial_number
 
+        # Ignore other commands that might be pending?
+        self._serial.reset_output_buffer()
+        self._serial.reset_input_buffer()
+        self._serial.flush()
+
+        # Cache the version number so we don't keep asking it for various reasons
+        self._version = self._ask("version")
+        good_version = False
+        try:
+            good_version = Version(self.version) > Version("0.0.0")
+        except Exception:
+            pass
+
+        if not good_version:
+            raise RuntimeError(f"Unkown version '{self.version}'. Please contact Ramona Optics.")
+
     def close(self):
         if self._serial is not None:
             self._serial.close()
 
         self._serial = None
         self.serial_number = None
+        self._version = None
 
     def __del__(self):
         # Do we want to call close on this delete instance????
@@ -375,7 +400,7 @@ class TeensyToAny:
 
     @property
     def version(self):
-        return self._ask("version")
+        return self._version
 
     def spi_begin(self):
         self._ask("spi_begin")
