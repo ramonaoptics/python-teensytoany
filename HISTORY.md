@@ -1,5 +1,12 @@
 # History
 
+## 0.0.30 (2023-04-03)
+
+* Increase default timeout to 0.2 seconds from 0.1. This helps receive error
+  messages from missed I2C communications.
+* Return an error if no response is returned from a standard command indicating
+  a timeout.
+
 ## 0.0.29 (2023-03-06)
 
 * Try to avoid racy conditions in version reading
