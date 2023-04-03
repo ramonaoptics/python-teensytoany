@@ -143,13 +143,18 @@ class TeensyToAny:
         return pairs
 
     def __init__(self, serial_number=None, *,
-                 baudrate=115200, timeout=0.1, open=True):
+                 baudrate=115200, timeout=0.205, open=True):
         """A class to control the TeensyToAny Debugger.
 
         Parameters
         ----------
         serial_number: optional
             If provided, will attempt to open the specified serial number
+
+        timeout: float
+            Timeout before reading a command fails. A default value of 0.205
+            was chosen so that the Serial connection adequately waits for
+            hardware timeouts that may be as long as 0.200 seconds.
 
         """
 
@@ -243,6 +248,8 @@ class TeensyToAny:
     def _ask(self, data, *, size=1024, decode=True) -> str:
         self._write(data)
         returned = self._read(size=size, decode=decode)
+        if len(returned) == 0:
+            raise RuntimeError(f"Failed to read a response for command: {data}")
 
         returned_list = returned.split(' ', 1)
         error = returned_list[0]
