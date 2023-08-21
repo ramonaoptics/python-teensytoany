@@ -1,5 +1,9 @@
 # History
 
+## 0.0.31 (2023-08-21)
+
+* Add the ability to read and write to the teensy's registries.
+
 ## 0.0.30 (2023-04-03)
 
 * Increase default timeout to 0.2 seconds from 0.1. This helps receive error
