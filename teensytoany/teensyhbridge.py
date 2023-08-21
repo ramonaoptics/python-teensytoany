@@ -30,7 +30,7 @@ class TeensyHBridge():
         self.pin_number_b = 8
         # This seems to be the minimum frequency we can set the pins to.
         # Any value lower will be doubled until passing this threshold.
-        self.poweron_frequency = 0x900
+        self.poweron_frequency = 0x900  # 2.3KHz
 
         self._teensy = TeensyToAny(open=open, **kwargs)
         if open:
