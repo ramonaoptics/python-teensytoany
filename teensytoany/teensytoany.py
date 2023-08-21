@@ -405,6 +405,35 @@ class TeensyToAny:
         returned = self._ask(f"gpio_digital_read {pin}")
         return bool(int(returned, base=0))
 
+    def register_write_uint16(self, register_address, value):
+        """Write value directly to teensy register.
+
+        Parameters
+        ----------
+        register_address: int
+            Register address to write to.
+        value: int
+            Value to write to address. Should be between 0 and 65535.
+        """
+        self._ask(f"register_write_uint16 {register_address} {value}")
+
+    def register_read_uint16(self, register_address):
+        """Read value directly from a teensy register.
+
+        Parameters
+        ----------
+        register_address: int
+            Register address to write to.
+
+        Returns
+        -------
+        value: int
+            Read value. Will be from 0 to 65535.
+
+        """
+        returned = self._ask(f"gpio_digital_read {register_address}")
+        return int(returned, base=16)
+
     @property
     def version(self):
         return self._version
