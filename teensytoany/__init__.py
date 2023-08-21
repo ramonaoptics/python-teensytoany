@@ -4,9 +4,11 @@ __author__ = 'Ramona Optics'
 __email__ = 'info@ramonaoptics.com'
 from .teensytoany import TeensyToAny
 from .teensypower import TeensyPower
+from .teensyhbridge import TeensyHBridge
 from ._version import __version__  # noqa
 
 __all__ = [
     'TeensyToAny',
     'TeensyPower',
+    'TeensyHBridge'
 ]
