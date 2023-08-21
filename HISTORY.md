@@ -2,7 +2,7 @@
 
 ## 0.0.31 (2023-08-21)
 
-* Add the ability to read and write to the teensy's registries.
+* Add the ability to read and write to the teensy's registers.
 
 ## 0.0.30 (2023-04-03)
 
