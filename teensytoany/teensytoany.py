@@ -481,7 +481,7 @@ class TeensyToAny:
 
         """
         returned = self._ask(f"register_read_uint16 {register_address}")
-        return int(returned, base=16)
+        return int(returned, base=0)
 
     @property
     def version(self):
