@@ -431,7 +431,7 @@ class TeensyToAny:
             Read value. Will be from 0 to 65535.
 
         """
-        returned = self._ask(f"gpio_digital_read {register_address}")
+        returned = self._ask(f"register_read_uint16 {register_address}")
         return int(returned, base=16)
 
     @property
