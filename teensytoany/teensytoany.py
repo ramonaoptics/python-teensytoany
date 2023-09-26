@@ -531,7 +531,15 @@ class TeensyToAny:
         return self._ask(f"spi_transfer {data}")
 
     def spi_transfer_bulk(self, data):
-        return self._ask("spi_transfer_bulk " + " ".join(str(d) for d in data))
+        returned = self._ask(
+            "spi_transfer_bulk " + " ".join(
+                str(d) for d in data
+            )
+        ).split(' ')
+        return [
+            int(i, base=0)
+            for i in returned
+        ]
 
     def spi_read_byte(self, data):
         """Read a byte of data over SPI.
