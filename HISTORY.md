@@ -1,13 +1,21 @@
 # History
 
-## 0.0.32 (2023-08-26)
+## 0.0.34 (2023-08-26)
 
+* Small fixup in how reading the Teensy's registers is done to ensure better
+  forward compatibility.
+
+## 0.0.33 (2023-08-26)
 
 The following features require teensy-to-any version 0.0.23 or greater
 * Add support for `gpio_digital_pulse`.
 * Add support for `analog_pulse`.
 * Add support for new `value` parameter for `gpio_pin_mode`.
 * Add support to read the data returned from `spi_transfer_bulk`.
+
+## 0.0.32 (2023-08-30)
+
+* Address bugs in reading the values from Teensy's registers.
 
 ## 0.0.31 (2023-08-21)
 
