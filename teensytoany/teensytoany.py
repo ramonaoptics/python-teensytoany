@@ -365,7 +365,6 @@ class TeensyToAny:
     def gpio_digital_write(self, pin, value):
         """Call the ardunio DigitalWrite function.
 
-
         Parameters
         ----------
         pin: int
@@ -376,7 +375,7 @@ class TeensyToAny:
         """
         self._ask(f"gpio_digital_write {pin} {value}")
 
-    def gpio_pin_mode(self, pin, mode):
+    def gpio_pin_mode(self, pin, mode, value=None):
         """Call the arduino PinMode function.
 
         Parameters
@@ -385,8 +384,58 @@ class TeensyToAny:
             Pin number to control.
         mode: 0, 1, "INPUT", "OUTPUT"
             Mode which to set the pin to.
+        value: None, 0, 1, "HIGH", "LOW"
+            Value to assign to the pin. The value will be set if it is not None.
+
         """
-        self._ask(f"gpio_pin_mode {pin} {mode}")
+        if value is None:
+            cmd = f"gpio_pin_mode {pin} {mode}"
+        else:
+            cmd = f"gpio_pin_mode {pin} {mode} {value}"
+
+        self._ask(cmd)
+
+    def gpio_digital_pulse(self, pin, value, *, duration, value_end=None):
+        """Call the ardunio DigitalWrite function.
+
+        Parameters
+        ----------
+        pin: int
+            Pin number to control.
+        value: 0, 1, "HIGH", "LOW"
+            Value to assign to the pin
+        duration: float
+            The duration of the pulse in seconds.
+        value_end:
+            The value of the pin at the end of the pulse. If not provided, it
+            will be the opposite of the value at the beginning of the pulse.
+
+        """
+
+        if value_end is None:
+            if isinstance(value, str):
+                if value.upper() == "LOW":
+                    value_end = "HIGH"
+                else:
+                    value_end = "LOW"
+            elif not value:
+                value_end = 1
+            else:
+                # I want the "safe default" to be "low"
+                value_end = 0
+
+        # We want to ensure that the command won't timeout
+        # For this, we check that the pulse duration is less than
+        # 80% of the time, or provide a 50 ms buffer. Whichever is bigger.
+        maximum_duration = max(self._timeout * 0.8, self._timeout - 50E-3)
+        if duration > maximum_duration:
+            raise ValueError(
+                f"The duration, {duration:g} seconds, must be smaller than "
+                f"{maximum_duration:g} seconds otherwise the the communication "
+                "might timeout. Consider increasing the timeout duration at "
+                "setup time."
+            )
+        self._ask(f"gpio_digital_pulse {pin} {value} {value_end} {duration}")
 
     def gpio_digital_read(self, pin):
         """Call the arduino DigitalRead function.
@@ -513,6 +562,38 @@ class TeensyToAny:
         # https://www.arduino.cc/reference/en/language/functions/analog-io/analogwrite/
         value = int(value)
         self._ask(f"analog_write {pin} {value}")
+
+    def analog_pulse(
+        self, pin: int, value: int, *, duration: float, value_end: int=0
+    ):
+        """Pulse the analog value for a specific duration of time
+
+        Parameters
+        ----------
+        pin: int
+            Pin number to control.
+        value: int
+            Value to write to analogWrite during the pulse
+        duration: float
+            The duration of the pulse in seconds.
+        value_end: int
+            The value at the end of the pulse.
+
+        """
+
+        # We want to ensure that the command won't timeout
+        # For this, we check that the pulse duration is less than
+        # 80% of the time, or provide a 50 ms buffer. Whichever is bigger.
+        maximum_duration = max(self._timeout * 0.8, self._timeout - 50E-3)
+        if duration > maximum_duration:
+            raise ValueError(
+                f"The duration, {duration:g} seconds, must be smaller than "
+                f"{maximum_duration:g} seconds otherwise the the communication "
+                "might timeout. Consider increasing the timeout duration at "
+                "setup time."
+            )
+
+        self._ask(f"analog_pulse {pin} {value} {value_end} {duration}")
 
     def analog_read(self, pin: int):
         """Call the arduino analogRead function.
