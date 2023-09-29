@@ -1,5 +1,13 @@
 # History
 
+## 0.1.0 (2023-09-29)
+
+* Provide access the new `mcu` command that reveals the microcontroller used at
+  the time of firmware programming.
+
+* Provide an internal method that can be used by developers to update to the
+  latest firmware.
+
 ## 0.0.34 (2023-08-26)
 
 * Small fixup in how reading the Teensy's registers is done to ensure better

@@ -8,16 +8,6 @@ from time import sleep
 
 __all__ = ['TeensyToAny', 'known_devices', 'known_serial_numbers']
 
-recommended_firmware_version = "0.1.0"
-latest_firmware_url = {
-    "TEENSY32": f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{recommended_firmware_version}/firmware_teensy32-{recommended_firmware_version}.hex",  # noqa
-    "TEENSY40": f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{recommended_firmware_version}/firmware_teensy40-{recommended_firmware_version}.hex",  # noqa
-}
-latest_firmware_hash = {
-    "TEENSY32": "sha256:4189fa1253469d9a2502e18f1fc7448ad63af328ffafb94a898afd87a9f8cbc6",  # noqa
-    "TEENSY40": "sha256:4fe55ec45d0db8f8bd181e040ab358bf67ba7aed6b4245a0e3242720f52cf41b",  # noqa
-}
-
 known_devices = [
     # Example device structure
     # These include useful information about the hardware that is created and
@@ -142,6 +132,24 @@ class TeensyToAny:
         return serial_numbers
 
     @staticmethod
+    def _get_latest_available_firmware():
+        import requests
+
+        repo_url = "https://api.github.com/repos/ramonaoptics/teensy-to-any"
+        releases_url = f"{repo_url}/releases/latest"
+
+        response = requests.get(releases_url)
+
+        if response.status_code != 200:
+            raise RuntimeError(
+                "Failed to fetch the latest release information. "
+                f"Status code: {response.status_code}")
+        release_data = response.json()
+        latest_release_version = release_data["tag_name"]
+
+        return latest_release_version
+
+    @staticmethod
     def _device_serial_number_pairs(serial_numbers=None, *, device_name=None):
         if device_name is None:
             device_name = TeensyToAny._device_name
@@ -180,11 +188,12 @@ class TeensyToAny:
             # there is no serial number specificity
             raise RuntimeError("We do not supporting updating MCUs on windows")
 
+        latest_version = self._get_latest_available_firmware()
         if not force:
-            if Version(current_version) >= Version(recommended_firmware_version):
+            if Version(current_version) >= Version(latest_version):
                 return
 
-        file_url = latest_firmware_url[mcu]
+        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{latest_version}/firmware_{mcu.lower()}.hex"  # noqa
 
         import tempfile
         import requests
