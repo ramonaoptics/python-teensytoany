@@ -2,11 +2,11 @@ from typing import Sequence
 
 from serial import Serial, LF
 from serial.tools.list_ports import comports
-from os import strerror
+import os
 from packaging.version import Version
+from time import sleep
 
 __all__ = ['TeensyToAny', 'known_devices', 'known_serial_numbers']
-
 
 known_devices = [
     # Example device structure
@@ -17,30 +17,37 @@ known_devices = [
     {
         'serial_number': '4725230',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '5032260',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '4725070',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '4726520',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '5032540',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '4728790',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '5955040',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
 ]
 
@@ -125,6 +132,24 @@ class TeensyToAny:
         return serial_numbers
 
     @staticmethod
+    def _get_latest_available_firmware():
+        import requests
+
+        repo_url = "https://api.github.com/repos/ramonaoptics/teensy-to-any"
+        releases_url = f"{repo_url}/releases/latest"
+
+        response = requests.get(releases_url)
+
+        if response.status_code != 200:
+            raise RuntimeError(
+                "Failed to fetch the latest release information. "
+                f"Status code: {response.status_code}")
+        release_data = response.json()
+        latest_release_version = release_data["tag_name"]
+
+        return latest_release_version
+
+    @staticmethod
     def _device_serial_number_pairs(serial_numbers=None, *, device_name=None):
         if device_name is None:
             device_name = TeensyToAny._device_name
@@ -141,6 +166,66 @@ class TeensyToAny:
                 f"Could not find any {device_name} device."
             )
         return pairs
+
+    @property
+    def mcu(self):
+        return self._ask('mcu')
+
+    def _update_firmware(self, *, mcu=None, force=False):
+        from packaging.version import Version
+
+        current_version = self.version
+        if mcu is None:
+            mcu = self.mcu
+
+        if mcu is None:
+            raise RuntimeError(
+                "The current microcontroller is unknown, please specify it "
+                "before attempting to update the firmware.")
+
+        if os.name == 'nt':
+            # We do supporting updating, but it is "scary" to do so since
+            # there is no serial number specificity
+            raise RuntimeError("We do not supporting updating MCUs on windows")
+
+        latest_version = self._get_latest_available_firmware()
+        if not force:
+            if Version(current_version) >= Version(latest_version):
+                return
+
+        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{latest_version}/firmware_{mcu.lower()}.hex"  # noqa
+
+        import tempfile
+        import requests
+        import subprocess
+        firmware_filename = tempfile.mktemp(suffix='.hex')
+
+        response = requests.get(file_url)
+        if response.status_code != 200:
+            raise RuntimeError("Failed to download firmware")
+
+        # Open the file for binary writing
+        with open(firmware_filename, 'wb') as file:
+            # Write the content to the file in chunks
+            for chunk in response.iter_content(chunk_size=4096):
+                file.write(chunk)
+
+        requested_serial_number = self.serial_number
+        cmd_list = [
+            'teensy_loader_cli',
+            '-s',
+            f'--mcu={mcu}',
+            f'--serial-number={requested_serial_number}',
+            firmware_filename,
+        ]
+
+        self.close()
+        subprocess.check_call(cmd_list)
+        # Wait for the device to reboot
+        print("sleeping for 1 second")
+        sleep(1)
+        self._requested_serial_number = requested_serial_number
+        self.open()
 
     def __init__(self, serial_number=None, *,
                  baudrate=115200, timeout=0.205, open=True):
@@ -191,8 +276,9 @@ class TeensyToAny:
         self._serial.reset_input_buffer()
         self._serial.flush()
 
-        # Cache the version number so we don't keep asking it for various reasons
-        self._version = self._ask("version")
+        # Cache the version number so we don't keep asking it for speed
+        response_version = self._ask("version")
+        self._version = response_version
         good_version = False
         try:
             good_version = Version(self.version) > Version("0.0.0")
@@ -200,7 +286,10 @@ class TeensyToAny:
             pass
 
         if not good_version:
-            raise RuntimeError(f"Unkown version '{self.version}'. Please contact Ramona Optics.")
+            raise RuntimeError(
+                f"Unkown version '{response_version}'. "
+                "Please contact Ramona Optics for help with this error."
+            )
 
     def close(self):
         if self._serial is not None:
@@ -257,7 +346,7 @@ class TeensyToAny:
         error = int(error)
         if error != 0:
             if message is None:
-                message = strerror(error)
+                message = os.strerror(error)
             raise RuntimeError(f"Responded with Error Code {error}: {message}")
 
         if message is not None:
