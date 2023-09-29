@@ -276,8 +276,9 @@ class TeensyToAny:
         self._serial.reset_input_buffer()
         self._serial.flush()
 
-        # Cache the version number so we don't keep asking it for various reasons
-        self._version = self._ask("version")
+        # Cache the version number so we don't keep asking it for speed
+        response_version = self._ask("version")
+        self._version = response_version
         good_version = False
         try:
             good_version = Version(self.version) > Version("0.0.0")
@@ -285,7 +286,10 @@ class TeensyToAny:
             pass
 
         if not good_version:
-            raise RuntimeError(f"Unkown version '{self.version}'. Please contact Ramona Optics.")
+            raise RuntimeError(
+                f"Unkown version '{response_version}'. "
+                "Please contact Ramona Optics for help with this error."
+            )
 
     def close(self):
         if self._serial is not None:
