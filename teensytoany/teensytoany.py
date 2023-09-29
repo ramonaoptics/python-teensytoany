@@ -2,11 +2,21 @@ from typing import Sequence
 
 from serial import Serial, LF
 from serial.tools.list_ports import comports
-from os import strerror
+import os
 from packaging.version import Version
+from time import sleep
 
 __all__ = ['TeensyToAny', 'known_devices', 'known_serial_numbers']
 
+recommended_firmware_version = "0.1.0"
+latest_firmware_url = {
+    "TEENSY32": f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{recommended_firmware_version}/firmware_teensy32-{recommended_firmware_version}.hex",  # noqa
+    "TEENSY40": f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{recommended_firmware_version}/firmware_teensy40-{recommended_firmware_version}.hex",  # noqa
+}
+latest_firmware_hash = {
+    "TEENSY32": "sha256:4189fa1253469d9a2502e18f1fc7448ad63af328ffafb94a898afd87a9f8cbc6",  # noqa
+    "TEENSY40": "sha256:4fe55ec45d0db8f8bd181e040ab358bf67ba7aed6b4245a0e3242720f52cf41b",  # noqa
+}
 
 known_devices = [
     # Example device structure
@@ -17,30 +27,37 @@ known_devices = [
     {
         'serial_number': '4725230',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '5032260',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '4725070',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '4726520',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '5032540',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '4728790',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
     {
         'serial_number': '5955040',
         'device_name': 'teensytoany',
+        'mcu': 'TEENSY32',
     },
 ]
 
@@ -141,6 +158,65 @@ class TeensyToAny:
                 f"Could not find any {device_name} device."
             )
         return pairs
+
+    @property
+    def mcu(self):
+        return self._ask('mcu')
+
+    def _update_firmware(self, *, mcu=None, force=False):
+        from packaging.version import Version
+
+        current_version = self.version
+        if mcu is None:
+            mcu = self.mcu
+
+        if mcu is None:
+            raise RuntimeError(
+                "The current microcontroller is unknown, please specify it "
+                "before attempting to update the firmware.")
+
+        if os.name == 'nt':
+            # We do supporting updating, but it is "scary" to do so since
+            # there is no serial number specificity
+            raise RuntimeError("We do not supporting updating MCUs on windows")
+
+        if not force:
+            if Version(current_version) >= Version(recommended_firmware_version):
+                return
+
+        file_url = latest_firmware_url[mcu]
+
+        import tempfile
+        import requests
+        import subprocess
+        firmware_filename = tempfile.mktemp(suffix='.hex')
+
+        response = requests.get(file_url)
+        if response.status_code != 200:
+            raise RuntimeError("Failed to download firmware")
+
+        # Open the file for binary writing
+        with open(firmware_filename, 'wb') as file:
+            # Write the content to the file in chunks
+            for chunk in response.iter_content(chunk_size=4096):
+                file.write(chunk)
+
+        requested_serial_number = self.serial_number
+        cmd_list = [
+            'teensy_loader_cli',
+            '-s',
+            f'--mcu={mcu}',
+            f'--serial-number={requested_serial_number}',
+            firmware_filename,
+        ]
+
+        self.close()
+        subprocess.check_call(cmd_list)
+        # Wait for the device to reboot
+        print("sleeping for 1 second")
+        sleep(1)
+        self._requested_serial_number = requested_serial_number
+        self.open()
 
     def __init__(self, serial_number=None, *,
                  baudrate=115200, timeout=0.205, open=True):
@@ -257,7 +333,7 @@ class TeensyToAny:
         error = int(error)
         if error != 0:
             if message is None:
-                message = strerror(error)
+                message = os.strerror(error)
             raise RuntimeError(f"Responded with Error Code {error}: {message}")
 
         if message is not None:
