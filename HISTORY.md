@@ -1,5 +1,9 @@
 # History
 
+## 0.1.1 (2023-11-07)
+
+* Add a `timeout` property to simplify modifying the command timeout.
+
 ## 0.1.0 (2023-09-29)
 
 * Provide access the new `mcu` command that reveals the microcontroller used at
