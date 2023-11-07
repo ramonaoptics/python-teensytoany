@@ -1,6 +1,6 @@
 # History
 
-## 0.1.1 (2023-11-07)
+## 0.2.0 (2023-11-07)
 
 * Add a `timeout` property to simplify modifying the command timeout.
 
