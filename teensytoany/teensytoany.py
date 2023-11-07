@@ -576,6 +576,16 @@ class TeensyToAny:
     def version(self):
         return self._version
 
+    @property
+    def timeout(self):
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, value):
+        if self._serial is not None:
+            self._serial.timeout = value
+        self._timeout = value
+
     def spi_begin(self):
         self._ask("spi_begin")
 
