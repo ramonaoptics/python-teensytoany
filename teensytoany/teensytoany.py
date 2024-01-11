@@ -222,7 +222,6 @@ class TeensyToAny:
         self.close()
         subprocess.check_call(cmd_list)
         # Wait for the device to reboot
-        print("sleeping for 1 second")
         sleep(1)
         self._requested_serial_number = requested_serial_number
         self.open()
