@@ -5,8 +5,8 @@
 # distribution is made.  The magic value "__use_git__" is interpreted by
 # _version.py.
 
-version = "__use_git__"
+version = "__use_git__"  # pylint: disable=invalid-name
 
 # These values are only set if the distribution was created with 'git archive'
-refnames = "$Format:%D$"
-git_hash = "$Format:%h$"
+refnames = "$Format:%D$"  # pylint: disable=invalid-name
+git_hash = "$Format:%h$"  # pylint: disable=invalid-name

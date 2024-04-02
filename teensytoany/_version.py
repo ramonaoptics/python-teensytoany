@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # This file is part of 'miniver': https://github.com/jbweston/miniver
 #
-from collections import namedtuple
 import os
+from collections import namedtuple
 
 Version = namedtuple("Version", ("release", "dev", "labels"))
 
@@ -57,6 +57,7 @@ def pep440_format(version_info):
 
 def get_version_from_git():
     import subprocess
+
     # The '--long' flag gets us the 'dev' version and
     # The '--dirty' flag helps identify if files have been modified
     # git hash, '--always' returns the git hash even if there are no tags.

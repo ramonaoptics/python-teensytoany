@@ -1,10 +1,12 @@
+import os
+import subprocess
+import tempfile
+from time import sleep
 from typing import Sequence
 
-from serial import Serial, LF
-from serial.tools.list_ports import comports
-import os
 from packaging.version import Version
-from time import sleep
+from serial import LF, Serial
+from serial.tools.list_ports import comports
 
 __all__ = ['TeensyToAny', 'known_devices', 'known_serial_numbers']
 
@@ -132,13 +134,13 @@ class TeensyToAny:
         return serial_numbers
 
     @staticmethod
-    def _get_latest_available_firmware():
-        import requests
+    def _get_latest_available_firmware(*, timeout=2):
+        import requests  # pylint: disable=import-outside-toplevel
 
         repo_url = "https://api.github.com/repos/ramonaoptics/teensy-to-any"
         releases_url = f"{repo_url}/releases/latest"
 
-        response = requests.get(releases_url)
+        response = requests.get(releases_url, timeout=timeout)
 
         if response.status_code != 200:
             raise RuntimeError(
@@ -171,8 +173,8 @@ class TeensyToAny:
     def mcu(self):
         return self._ask('mcu')
 
-    def _update_firmware(self, *, mcu=None, force=False):
-        from packaging.version import Version
+    def _update_firmware(self, *, mcu=None, force=False, timeout=2):
+        import requests  # pylint: disable=import-outside-toplevel
 
         current_version = self.version
         if mcu is None:
@@ -188,19 +190,16 @@ class TeensyToAny:
             # there is no serial number specificity
             raise RuntimeError("We do not supporting updating MCUs on windows")
 
-        latest_version = self._get_latest_available_firmware()
+        latest_version = self._get_latest_available_firmware(timeout=timeout)
         if not force:
             if Version(current_version) >= Version(latest_version):
                 return
 
-        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{latest_version}/firmware_{mcu.lower()}.hex"  # noqa
+        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{latest_version}/firmware_{mcu.lower()}.hex"  # noqa # pylint: disable=line-too-long
 
-        import tempfile
-        import requests
-        import subprocess
         firmware_filename = tempfile.mktemp(suffix='.hex')
 
-        response = requests.get(file_url)
+        response = requests.get(file_url, timeout=timeout)
         if response.status_code != 200:
             raise RuntimeError("Failed to download firmware")
 
@@ -226,8 +225,13 @@ class TeensyToAny:
         self._requested_serial_number = requested_serial_number
         self.open()
 
-    def __init__(self, serial_number=None, *,
-                 baudrate=115200, timeout=0.205, open=True):
+    def __init__(
+        self,
+        serial_number=None, *,
+        baudrate=115200,
+        timeout=0.205,
+        open=True,  # pylint: disable=redefined-builtin
+    ):
         """A class to control the TeensyToAny Debugger.
 
         Parameters
@@ -246,6 +250,7 @@ class TeensyToAny:
         self._baudrate = baudrate
         self._timeout = timeout
         self._serial = None
+        self.serial_number = None
         self._version = None
         if open:
             self.open()
@@ -281,7 +286,7 @@ class TeensyToAny:
         good_version = False
         try:
             good_version = Version(self.version) > Version("0.0.0")
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             pass
 
         if not good_version:
@@ -328,10 +333,11 @@ class TeensyToAny:
             raise RuntimeError("Device must be opened first")
 
         data = self._serial.read_until(LF, size=size)
+
         if decode:
-            return data.decode()
-        else:
-            return data
+            data = data.decode()
+
+        return data
 
     def _ask(self, data, *, size=1024, decode=True) -> str:
         self._write(data)
@@ -433,14 +439,7 @@ class TeensyToAny:
                 raise NotImplementedError()
 
     def i2c_read_payload(self, address: int, register_address: int, num_bytes: int) -> Sequence:
-
-        if Version(self.version) >= Version("0.0.14"):
-            cmd = f"i2c_read_payload 0x{address:02x} 0x{register_address:02x} {num_bytes}"
-            returned = self._ask(cmd)
-            register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
-            return register_data
-
-        else:
+        if Version(self.version) < Version("0.0.14"):
             if num_bytes != 1:
                 raise NotImplementedError()
             returned = self._ask(f"i2c_read_no_register_uint8 0x{address:02x}")
@@ -449,6 +448,11 @@ class TeensyToAny:
                 int(register_data),
                 length=num_bytes, byteorder='big',
                 signed=False)
+
+        cmd = f"i2c_read_payload 0x{address:02x} 0x{register_address:02x} {num_bytes}"
+        returned = self._ask(cmd)
+        register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
+        return register_data
 
     def gpio_digital_write(self, pin, value):
         """Call the ardunio DigitalWrite function.

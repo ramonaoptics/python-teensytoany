@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # vim: set ts=8 sw=4 tw=0 et :
-from teensytoany import TeensyPower
 import pytest
+
+from teensytoany import TeensyPower
 
 
 def test_contructor_bad_device():

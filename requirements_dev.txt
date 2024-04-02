@@ -2,3 +2,6 @@ wheel
 flake8
 tox
 pytest
+pylint
+requests
+isort
