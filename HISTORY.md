@@ -1,5 +1,9 @@
 # History
 
+## 0.3.0 (2024-04-02)
+
+* Add a `timeout` property to the functions that deal with updating the firmware.
+
 ## 0.2.0 (2023-11-07)
 
 * Add a `timeout` property to simplify modifying the command timeout.

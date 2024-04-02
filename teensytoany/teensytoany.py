@@ -134,13 +134,13 @@ class TeensyToAny:
         return serial_numbers
 
     @staticmethod
-    def _get_latest_available_firmware():
+    def _get_latest_available_firmware(*, timeout=2):
         import requests  # pylint: disable=import-outside-toplevel
 
         repo_url = "https://api.github.com/repos/ramonaoptics/teensy-to-any"
         releases_url = f"{repo_url}/releases/latest"
 
-        response = requests.get(releases_url)
+        response = requests.get(releases_url, timeout=timeout)
 
         if response.status_code != 200:
             raise RuntimeError(
@@ -173,7 +173,7 @@ class TeensyToAny:
     def mcu(self):
         return self._ask('mcu')
 
-    def _update_firmware(self, *, mcu=None, force=False):
+    def _update_firmware(self, *, mcu=None, force=False, timeout=2):
         import requests  # pylint: disable=import-outside-toplevel
 
         current_version = self.version
@@ -190,7 +190,7 @@ class TeensyToAny:
             # there is no serial number specificity
             raise RuntimeError("We do not supporting updating MCUs on windows")
 
-        latest_version = self._get_latest_available_firmware()
+        latest_version = self._get_latest_available_firmware(timeout=timeout)
         if not force:
             if Version(current_version) >= Version(latest_version):
                 return
@@ -199,7 +199,7 @@ class TeensyToAny:
 
         firmware_filename = tempfile.mktemp(suffix='.hex')
 
-        response = requests.get(file_url)
+        response = requests.get(file_url, timeout=timeout)
         if response.status_code != 200:
             raise RuntimeError("Failed to download firmware")
 
