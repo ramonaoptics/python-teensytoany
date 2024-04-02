@@ -1,5 +1,9 @@
 # History
 
+## 0.3.0 (2023-11-07)
+
+* Add a `timeout` to the calls that check for automatic updates of the firmware.
+
 ## 0.2.0 (2023-11-07)
 
 * Add a `timeout` property to simplify modifying the command timeout.
