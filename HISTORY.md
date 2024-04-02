@@ -1,6 +1,6 @@
 # History
 
-## 0.3.0 (2023-11-07)
+## 0.3.0 (2024-04-01)
 
 * Add a `timeout` to the calls that check for automatic updates of the firmware.
 
