@@ -138,7 +138,7 @@ class TeensyToAny:
         repo_url = "https://api.github.com/repos/ramonaoptics/teensy-to-any"
         releases_url = f"{repo_url}/releases/latest"
 
-        response = requests.get(releases_url)
+        response = requests.get(releases_url, timeout=2)
 
         if response.status_code != 200:
             raise RuntimeError(
@@ -200,7 +200,7 @@ class TeensyToAny:
         import subprocess
         firmware_filename = tempfile.mktemp(suffix='.hex')
 
-        response = requests.get(file_url)
+        response = requests.get(file_url, timeout=2)
         if response.status_code != 200:
             raise RuntimeError("Failed to download firmware")
 
