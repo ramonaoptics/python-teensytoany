@@ -204,7 +204,7 @@ class TeensyToAny:
                 "The current microcontroller is unknown, please specify it "
                 "before attempting to update the firmware.")
 
-        latest_version = self._get_latest_available_firmware(timeout=timeout)
+        latest_version = self._get_latest_available_firmware(mcu=mcu, timeout=timeout)
         if not force:
             if Version(current_version) >= Version(latest_version):
                 return

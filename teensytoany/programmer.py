@@ -24,9 +24,29 @@ import teensytoany
     type=str,
     help='Firmware version to program. If not provided, the latest version will be programmed.'
 )
+@click.option(
+    '--download-only',
+    is_flag=True,
+    default=False,
+    help='Download the firmware only, do not program the device.'
+)
 # Make the epligue print the version
 @click.version_option(teensytoany.__version__)
-def teensytoany_programmer(serial_number=None, mcu='TEENSY40', firmware_version=None):
+def teensytoany_programmer(
+    serial_number=None,
+    mcu='TEENSY40',
+    firmware_version=None,
+    download_only=False
+):
+    if download_only:
+        for mcu in ['TEENSY40', 'TEENSY32']:
+            if firmware_version is None:
+                firmware_version = teensytoany.TeensyToAny._get_latest_available_firmware(
+                    mcu=mcu, online=True, local=False)
+            print(f"Downloading firmware version {firmware_version} for {mcu}.")
+            teensytoany.TeensyToAny._download_firmware(mcu=mcu, version=firmware_version)
+        return
+
     """Program a Teensy device with a given firmware version"""
     print(f'Programming irmware version {mcu} {firmware_version}', end='')
     teensytoany.TeensyToAny.program_firmware(serial_number, mcu=mcu, version=firmware_version)
