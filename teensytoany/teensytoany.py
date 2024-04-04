@@ -1,6 +1,5 @@
 import os
 import subprocess
-import tempfile
 from time import sleep
 from typing import Sequence
 
@@ -174,9 +173,8 @@ class TeensyToAny:
         return self._ask('mcu')
 
     def _update_firmware(self, *, mcu=None, force=False, timeout=2):
-        import requests  # pylint: disable=import-outside-toplevel
-
         current_version = self.version
+        serial_number = self.serial_number
         if mcu is None:
             mcu = self.mcu
 
@@ -185,45 +183,80 @@ class TeensyToAny:
                 "The current microcontroller is unknown, please specify it "
                 "before attempting to update the firmware.")
 
-        if os.name == 'nt':
-            # We do supporting updating, but it is "scary" to do so since
-            # there is no serial number specificity
-            raise RuntimeError("We do not supporting updating MCUs on windows")
-
         latest_version = self._get_latest_available_firmware(timeout=timeout)
         if not force:
             if Version(current_version) >= Version(latest_version):
                 return
 
-        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{latest_version}/firmware_{mcu.lower()}.hex"  # noqa # pylint: disable=line-too-long
+        self.close()
+        self._requested_serial_number = serial_number
+        try:
+            self.program_firmware(
+                serial_number,
+                mcu=mcu,
+                version=latest_version,
+                timeout=timeout
+            )
+            # Reraise any exceptions that were caught
+        finally:
+            self.open()
 
-        firmware_filename = tempfile.mktemp(suffix='.hex')
+    @staticmethod
+    def program_firmware(serial_number=None, *, version=None, mcu=None, timeout=2):
+        import requests  # pylint: disable=import-outside-toplevel
+        from appdirs import AppDirs  # pylint: disable=import-outside-toplevel
+        from pathlib import Path  # pylint: disable=import-outside-toplevel
 
-        response = requests.get(file_url, timeout=timeout)
-        if response.status_code != 200:
-            raise RuntimeError("Failed to download firmware")
+        if serial_number is None:
+            available_serial_numbers = TeensyToAny.list_all_serial_numbers()
+            if len(available_serial_numbers) == 0:
+                raise RuntimeError("No TeensyToAny devices found.")
+            if len(available_serial_numbers) > 1:
+                raise RuntimeError(
+                    "Multiple TeensyToAny devices found. Please specify the "
+                    "serial number of the device you would like to program."
+                )
+            serial_number = available_serial_numbers[0]
 
-        # Open the file for binary writing
-        with open(firmware_filename, 'wb') as file:
-            # Write the content to the file in chunks
-            for chunk in response.iter_content(chunk_size=4096):
-                file.write(chunk)
+        if version is None:
+            version = TeensyToAny._get_latest_available_firmware(
+                timeout=timeout)
+        app = AppDirs('teensytoany', 'ramonaoptics')
+        cache_dir = Path(app.user_cache_dir)
 
-        requested_serial_number = self.serial_number
+        if os.name == 'nt':
+            # We do supporting updating, but it is "scary" to do so since
+            # there is no serial number specificity
+            raise RuntimeError("We do not supporting programing TeensyToAny devices on Windows")
+
+        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{version}/firmware_{mcu.lower()}.hex"  # noqa # pylint: disable=line-too-long
+        firmware_filename = f"firmware_{mcu.lower()}_{version}.hex"
+
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        download_filename = cache_dir / firmware_filename
+
+        if not download_filename.is_file():
+            response = requests.get(file_url, timeout=timeout)
+            if response.status_code != 200:
+                raise RuntimeError("Failed to download firmware")
+
+            # Open the file for binary writing
+            with open(download_filename, 'wb') as file:
+                # Write the content to the file in chunks
+                for chunk in response.iter_content(chunk_size=4096):
+                    file.write(chunk)
+
         cmd_list = [
             'teensy_loader_cli',
             '-s',
             f'--mcu={mcu}',
-            f'--serial-number={requested_serial_number}',
-            firmware_filename,
+            f'--serial-number={serial_number}',
+            str(download_filename),
         ]
 
-        self.close()
         subprocess.check_call(cmd_list)
         # Wait for the device to reboot
         sleep(1)
-        self._requested_serial_number = requested_serial_number
-        self.open()
 
     def __init__(
         self,
