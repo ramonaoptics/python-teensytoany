@@ -1,5 +1,10 @@
 # History
 
+## 0.4.0 (2024-04-03)
+
+* Provide a static method to program the latest firmware version and a CLI to
+  do so from the terminal.
+
 ## 0.3.0 (2024-04-02)
 
 * Add a `timeout` property to the functions that deal with updating the firmware.
