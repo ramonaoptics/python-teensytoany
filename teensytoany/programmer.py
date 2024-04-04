@@ -1,7 +1,7 @@
 import click
 import teensytoany
 
-@click.command()
+@click.command(epilog=f"Version {teensytoany.__version__}")
 @click.option(
     '--serial-number',
     default=None,
