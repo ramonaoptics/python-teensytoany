@@ -133,7 +133,28 @@ class TeensyToAny:
         return serial_numbers
 
     @staticmethod
-    def _get_latest_available_firmware(*, timeout=2):
+    def _get_latest_available_firmware(*, mcu='TEENSY40', online=True, local=True, timeout=2):
+        if local:
+            local_versions = TeensyToAny._find_local_versions(mcu=mcu)
+            if len(local_versions) > 0:
+                latest = local_versions[-1]
+        try:
+            if online:
+                latest = TeensyToAny._get_latest_available_firmware_online(
+                    timeout=timeout)
+        except Exception as e:
+            pass
+
+        if latest is None:
+            raise RuntimeError(
+                "Failed to fetch the latest release information. "
+                "Please check your internet connection and try again."
+            )
+
+        return latest
+
+    @staticmethod
+    def _get_latest_available_firmware_online(*, timeout=2):
         import requests  # pylint: disable=import-outside-toplevel
 
         repo_url = "https://api.github.com/repos/ramonaoptics/teensy-to-any"
@@ -202,9 +223,56 @@ class TeensyToAny:
             self.open()
 
     @staticmethod
-    def program_firmware(serial_number=None, *, version=None, mcu=None, timeout=2):
+    def _find_local_versions(*, mcu=None):
+        firmware_dir = TeensyToAny._generate_firmware_directory(mcu=mcu)
+        if not firmware_dir.is_dir():
+            return []
+
+        versions = [
+            d.name
+            for d in firmware_dir.iterdir()
+            if d.is_dir() and (d / 'firmware.hex').is_file()
+        ]
+
+        versions.sort(key=lambda x: Version(x))
+        return versions
+
+    @staticmethod
+    def _generate_firmware_filename(*, mcu, version):
+        firmware_dir = TeensyToAny._generate_firmware_directory(mcu=mcu)
+        firmware_filename = firmware_dir / f"{version}" / "firmware.hex"
+        return firmware_filename
+
+    @staticmethod
+    def _generate_firmware_directory(*, mcu):
+        from appdirs import AppDirs
+        from pathlib import Path
+        app = AppDirs('teensytoany', 'ramonaoptics')
+        cache_dir = Path(app.user_cache_dir)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        firmware_dir = cache_dir / f"{mcu.lower()}"
+        firmware_dir.mkdir(parents=True, exist_ok=True)
+        return firmware_dir
+
+    @staticmethod
+    def _download_firmware(*, mcu, version, timeout=2):
+        firmware_filename = TeensyToAny._generate_firmware_filename(mcu=mcu, version=version)
+
         import requests  # pylint: disable=import-outside-toplevel
-        from appdirs import AppDirs  # pylint: disable=import-outside-toplevel
+        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{version}/firmware_{mcu.lower()}.hex"  # noqa # pylint: disable=line-too-long
+        response = requests.get(file_url, timeout=timeout)
+        if response.status_code != 200:
+            raise RuntimeError("Failed to download firmware")
+
+        firmware_filename.parent.mkdir(parents=True, exist_ok=True)
+        # Open the file for binary writing
+        with open(firmware_filename, 'wb') as file:
+            # Write the content to the file in chunks
+            for chunk in response.iter_content(chunk_size=4096):
+                file.write(chunk)
+
+    @staticmethod
+    def program_firmware(serial_number=None, *, mcu=None, version=None, timeout=2):
         from pathlib import Path  # pylint: disable=import-outside-toplevel
 
         if serial_number is None:
@@ -218,40 +286,29 @@ class TeensyToAny:
                 )
             serial_number = available_serial_numbers[0]
 
+        if mcu is None:
+            raise RuntimeError("mcu must be provided and cannot be left as None.")
+
         if version is None:
             version = TeensyToAny._get_latest_available_firmware(
                 timeout=timeout)
-        app = AppDirs('teensytoany', 'ramonaoptics')
-        cache_dir = Path(app.user_cache_dir)
 
         if os.name == 'nt':
             # We do supporting updating, but it is "scary" to do so since
             # there is no serial number specificity
             raise RuntimeError("We do not supporting programing TeensyToAny devices on Windows")
 
-        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{version}/firmware_{mcu.lower()}.hex"  # noqa # pylint: disable=line-too-long
-        firmware_filename = f"firmware_{mcu.lower()}_{version}.hex"
+        firmware_filename = TeensyToAny._generate_firmware_filename(mcu=mcu, version=version)
 
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        download_filename = cache_dir / firmware_filename
-
-        if not download_filename.is_file():
-            response = requests.get(file_url, timeout=timeout)
-            if response.status_code != 200:
-                raise RuntimeError("Failed to download firmware")
-
-            # Open the file for binary writing
-            with open(download_filename, 'wb') as file:
-                # Write the content to the file in chunks
-                for chunk in response.iter_content(chunk_size=4096):
-                    file.write(chunk)
+        if not firmware_filename.is_file():
+            TeensyToAny._download_firmware(mcu=mcu, version=version, timeout=timeout)
 
         cmd_list = [
             'teensy_loader_cli',
             '-s',
             f'--mcu={mcu}',
             f'--serial-number={serial_number}',
-            str(download_filename),
+            str(firmware_filename),
         ]
 
         subprocess.check_call(cmd_list)
