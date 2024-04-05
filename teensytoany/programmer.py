@@ -1,5 +1,7 @@
 import click
+
 import teensytoany
+
 
 @click.command(epilog=f"Version {teensytoany.__version__}")
 @click.option(

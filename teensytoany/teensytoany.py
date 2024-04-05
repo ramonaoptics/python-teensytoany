@@ -247,8 +247,9 @@ class TeensyToAny:
 
     @staticmethod
     def _generate_firmware_directory(*, mcu):
+        from pathlib import Path  # pylint: disable=import-outside-toplevel
+
         from appdirs import AppDirs  # pylint: disable=import-outside-toplevel
-        from pathlib import Path     # pylint: disable=import-outside-toplevel
         app = AppDirs('teensytoany', 'ramonaoptics')
         cache_dir = Path(app.user_cache_dir)
         cache_dir.mkdir(parents=True, exist_ok=True)
