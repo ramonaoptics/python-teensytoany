@@ -1,7 +1,8 @@
 # History
 
-## 0.4.0 (2024-04-03)
+## 0.4.0 (2024-04-05)
 
+* Provide functions to fetch local and remote firmware versions.
 * Provide a static method to program the latest firmware version and a CLI to
   do so from the terminal.
 
