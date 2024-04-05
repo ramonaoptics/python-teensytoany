@@ -38,16 +38,17 @@ def teensytoany_programmer(
     firmware_version=None,
     download_only=False
 ):
+    """Program a Teensy device with a given firmware version"""
     if download_only:
-        for mcu in ['TEENSY40', 'TEENSY32']:
+        for mcu_to_download in ['TEENSY40', 'TEENSY32']:
             if firmware_version is None:
-                firmware_version = teensytoany.TeensyToAny._get_latest_available_firmware(
-                    mcu=mcu, online=True, local=False)
+                firmware_version = teensytoany.TeensyToAny.get_latest_available_firmware_version(
+                    mcu=mcu_to_download, online=True, local=False
+                )
             print(f"Downloading firmware version {firmware_version} for {mcu}.")
-            teensytoany.TeensyToAny._download_firmware(mcu=mcu, version=firmware_version)
+            teensytoany.TeensyToAny.download_firmware(mcu=mcu, version=firmware_version)
         return
 
-    """Program a Teensy device with a given firmware version"""
     print(f'Programming irmware version {mcu} {firmware_version}', end='')
     teensytoany.TeensyToAny.program_firmware(serial_number, mcu=mcu, version=firmware_version)
     teensy = teensytoany.TeensyToAny(serial_number)

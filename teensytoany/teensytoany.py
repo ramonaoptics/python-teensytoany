@@ -133,7 +133,9 @@ class TeensyToAny:
         return serial_numbers
 
     @staticmethod
-    def _get_latest_available_firmware(*, mcu='TEENSY40', online=True, local=True, timeout=2):
+    def get_latest_available_firmware_version(
+        *, mcu='TEENSY40', online=True, local=True, timeout=2
+    ):
         if local:
             local_versions = TeensyToAny._find_local_versions(mcu=mcu)
             if len(local_versions) > 0:
@@ -142,7 +144,7 @@ class TeensyToAny:
             if online:
                 latest = TeensyToAny._get_latest_available_firmware_online(
                     timeout=timeout)
-        except Exception as e:
+        except Exception:  # pylint: disable=broad-except
             pass
 
         if latest is None:
@@ -204,7 +206,7 @@ class TeensyToAny:
                 "The current microcontroller is unknown, please specify it "
                 "before attempting to update the firmware.")
 
-        latest_version = self._get_latest_available_firmware(mcu=mcu, timeout=timeout)
+        latest_version = self.get_latest_available_firmware_version(mcu=mcu, timeout=timeout)
         if not force:
             if Version(current_version) >= Version(latest_version):
                 return
@@ -234,7 +236,7 @@ class TeensyToAny:
             if d.is_dir() and (d / 'firmware.hex').is_file()
         ]
 
-        versions.sort(key=lambda x: Version(x))
+        versions.sort(key=Version)
         return versions
 
     @staticmethod
@@ -245,8 +247,8 @@ class TeensyToAny:
 
     @staticmethod
     def _generate_firmware_directory(*, mcu):
-        from appdirs import AppDirs
-        from pathlib import Path
+        from appdirs import AppDirs  # pylint: disable=import-outside-toplevel
+        from pathlib import Path     # pylint: disable=import-outside-toplevel
         app = AppDirs('teensytoany', 'ramonaoptics')
         cache_dir = Path(app.user_cache_dir)
         cache_dir.mkdir(parents=True, exist_ok=True)
@@ -255,7 +257,7 @@ class TeensyToAny:
         return firmware_dir
 
     @staticmethod
-    def _download_firmware(*, mcu, version, timeout=2):
+    def download_firmware(*, mcu, version, timeout=2):
         firmware_filename = TeensyToAny._generate_firmware_filename(mcu=mcu, version=version)
 
         import requests  # pylint: disable=import-outside-toplevel
@@ -271,10 +273,10 @@ class TeensyToAny:
             for chunk in response.iter_content(chunk_size=4096):
                 file.write(chunk)
 
+        return firmware_filename
+
     @staticmethod
     def program_firmware(serial_number=None, *, mcu=None, version=None, timeout=2):
-        from pathlib import Path  # pylint: disable=import-outside-toplevel
-
         if serial_number is None:
             available_serial_numbers = TeensyToAny.list_all_serial_numbers()
             if len(available_serial_numbers) == 0:
@@ -290,8 +292,7 @@ class TeensyToAny:
             raise RuntimeError("mcu must be provided and cannot be left as None.")
 
         if version is None:
-            version = TeensyToAny._get_latest_available_firmware(
-                timeout=timeout)
+            version = TeensyToAny.get_latest_available_firmware_version(timeout=timeout)
 
         if os.name == 'nt':
             # We do supporting updating, but it is "scary" to do so since
@@ -301,7 +302,7 @@ class TeensyToAny:
         firmware_filename = TeensyToAny._generate_firmware_filename(mcu=mcu, version=version)
 
         if not firmware_filename.is_file():
-            TeensyToAny._download_firmware(mcu=mcu, version=version, timeout=timeout)
+            TeensyToAny.download_firmware(mcu=mcu, version=version, timeout=timeout)
 
         cmd_list = [
             'teensy_loader_cli',
