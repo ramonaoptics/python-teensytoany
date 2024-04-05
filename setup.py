@@ -49,6 +49,11 @@ setup(
     include_package_data=True,
     keywords='teensytoany',
     name='teensytoany',
+    entry_points={
+        'console_scripts': [
+            'teensytoany_programmer=teensytoany.programmer:teensytoany_programmer',
+        ],
+    },
     packages=find_packages(include=['teensytoany']),
     tests_require=test_requirements,
     url='https://github.com/ramonaoptics/python-teensytoany',

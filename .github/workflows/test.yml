@@ -30,5 +30,7 @@ jobs:
       run: pylint teensytoany
     - name: isort
       run: isort --check-only .
+    - name: teensytoany_programmer
+      run: teensytoany_programmer --help
     - name: Test with tox
       run: tox

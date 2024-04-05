@@ -3,5 +3,8 @@ flake8
 tox
 pytest
 pylint
-requests
 isort
+# Optional dependencies below
+requests
+click
+appdirs
