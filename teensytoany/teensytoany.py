@@ -136,6 +136,7 @@ class TeensyToAny:
     def get_latest_available_firmware_version(
         *, mcu='TEENSY40', online=True, local=True, timeout=2
     ):
+        latest = None
         if local:
             local_versions = TeensyToAny._find_local_versions(mcu=mcu)
             if len(local_versions) > 0:
@@ -813,3 +814,80 @@ class TeensyToAny:
         """
         returned = self._ask(f"analog_read {pin}")
         return int(returned, base=0)
+
+    def eeprom_read_uint8(self, index: int) -> int:
+        """Read an 8-bit unsigned integer from the EEPROM.
+
+        Parameters
+        ----------
+        index: int
+            The index in the EEPROM to read the uint8 value.
+
+        Returns
+        -------
+        int
+            The 8-bit unsigned integer read from the EEPROM.
+
+        Raises
+        ------
+        ValueError
+            If the index is out of bounds.
+        """
+        cmd = f"eeprom_read_uint8 {index}"
+        returned = self._ask(cmd)
+        return int(returned, base=0)
+
+    def eeprom_write_uint8(self, index: int, data: int):
+        """Write an 8-bit unsigned integer to the EEPROM.
+
+        Parameters
+        ----------
+        index: int
+            The index in the EEPROM to write the uint8 value.
+        data: int
+            The 8-bit unsigned integer to write to the EEPROM.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ValueError
+            If the index is out of bounds or the data is too long to fit in the EEPROM.
+        """
+        cmd = f"eeprom_write_uint8 {index} {data}"
+        self._ask(cmd)
+
+    def startup_commands_available(self):
+        """Return the number of startup commands available."""
+        returned = self._ask("startup_commands_available")
+        return int(returned, base=0)
+
+    def read_startup_command(self, index):
+        """Read the startup command at the specified index."""
+        returned = self._ask(f"read_startup_command {index}")
+        return returned
+
+    def demo_commands_available(self):
+        """Return the number of demo commands available."""
+        returned = self._ask("demo_commands_available")
+        return int(returned, base=0)
+
+    def read_demo_command(self, index):
+        """Read the demo command at the specified index."""
+        returned = self._ask(f"read_demo_command {index}")
+        return returned
+
+    def demo_commands_enabled(self):
+        """Return whether the demo commands are enabled on startup."""
+        returned = self._ask("demo_commands_enabled")
+        return bool(int(returned, base=0))
+
+    def enable_demo_commands(self):
+        """Enable the demo commands on startup."""
+        self._ask("enable_demo_commands")
+
+    def disable_demo_commands(self):
+        """Disable the demo commands on startup."""
+        self._ask("disable_demo_commands")

@@ -1,5 +1,10 @@
 # History
 
+## 0.5.0 (2024-11-10)
+
+* Provide control over the startup and demo commands.
+* Ensure that potentially undefined variable is defined.
+
 ## 0.4.0 (2024-04-05)
 
 * Provide functions to fetch local and remote firmware versions.
