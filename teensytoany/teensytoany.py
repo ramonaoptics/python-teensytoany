@@ -136,6 +136,7 @@ class TeensyToAny:
     def get_latest_available_firmware_version(
         *, mcu='TEENSY40', online=True, local=True, timeout=2
     ):
+        latest = None
         if local:
             local_versions = TeensyToAny._find_local_versions(mcu=mcu)
             if len(local_versions) > 0:
