@@ -1,5 +1,9 @@
 # History
 
+## 0.6.0 (2025-03-09)
+
+* Provide a method to control LEDs through FastLED.
+
 ## 0.5.0 (2024-11-10)
 
 * Provide control over the startup and demo commands.
