@@ -899,9 +899,13 @@ class TeensyToAny:
     def fastled_set_brightness(self, brightness):
         self._ask(f"fastled_set_brightness {brightness}")
 
+    def fastled_get_brightness(self):
+        returned = self._ask("fastled_get_brightness")
+        return int(returned, base=0)
+
     def fastled_show(self, brightness=None):
         if brightness is not None:
-            self._ask("fastled_show {brightness}")
+            self._ask(f"fastled_show {brightness}")
         else:
             self._ask("fastled_show")
 
