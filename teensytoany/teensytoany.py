@@ -891,3 +891,25 @@ class TeensyToAny:
     def disable_demo_commands(self):
         """Disable the demo commands on startup."""
         self._ask("disable_demo_commands")
+
+    def fastled_add_leds(self, led_class, has_white, pin, n_leds):
+        has_white = int(bool(has_white))
+        self._ask(f"fastled_add_leds {led_class} {has_white} {pin} {n_leds}")
+
+    def fastled_set_brightness(self, brightness):
+        self._ask(f"fastled_set_brightness {brightness}")
+
+    def fastled_show(self, brightness=None):
+        if brightness is not None:
+            self._ask("fastled_show {brightness}")
+        else:
+            self._ask("fastled_show")
+
+    def fastled_set_rgb(self, led_index, r, g, b):
+        self._ask(f"fastled_set_rgb {led_index} {r} {g} {b}")
+
+    def fastled_set_hsv(self, led_index, h, s, v):
+        self._ask(f"fastled_set_hsv {led_index} {h} {s} {v}")
+
+    def fastled_set_hue(self, led_index, hue):
+        self._ask(f"fastled_set_hue {led_index} {hue}")
