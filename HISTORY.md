@@ -1,5 +1,9 @@
 # History
 
+## 0.7.0 (2025-03-12)
+
+* Add support for Wire1 I2C interface.
+
 ## 0.6.0 (2025-03-09)
 
 * Provide a method to control LEDs through FastLED.

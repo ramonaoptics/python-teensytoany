@@ -547,6 +547,102 @@ class TeensyToAny:
         register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
         return register_data
 
+    def i2c_1_init(self, baud_rate: int=100_100, timeout=200_000, register_space=1):
+        cmd = f"i2c_1_init {baud_rate:d} {timeout:d} {register_space:d}"
+        self._ask(cmd)
+
+    def i2c_1_read_uint8(self, address: int, register_address: int):
+        cmd = f"i2c_1_read_uint8 0x{address:02x} 0x{register_address:x}"
+        returned = self._ask(cmd)
+        return int(returned, base=0)
+
+    def i2c_1_read_uint16(self, address: int, register_address: int):
+        cmd = f"i2c_1_read_uint16 0x{address:02x} 0x{register_address:x}"
+        returned = self._ask(cmd)
+        return int(returned, base=0)
+
+    def i2c_1_write_uint8(self, address: int, register_address: int, data: int):
+        data = data & 0xFF
+        cmd = f"i2c_1_write_uint8 0x{address:02x} 0x{register_address:x} 0x{data:x}"
+        self._ask(cmd)
+
+    def i2c_1_write_uint16(self, address: int, register_address: int, data: int):
+        data = data & 0xFFFF
+        cmd = f"i2c_1_write_uint16 0x{address:02x} 0x{register_address:x} 0x{data:x}"
+        self._ask(cmd)
+
+    def i2c_1_write_read(self,
+                       address: int,
+                       data: Sequence,
+                       num_bytes: int) -> Sequence:
+        if len(data) != 2:
+            raise ValueError("data must be of length 2")
+        if num_bytes not in [1, 2]:
+            raise ValueError("Can only read 1 or 2 bytes at a time.")
+
+        register_address = int.from_bytes(
+            data, byteorder='big', signed=False)
+        if num_bytes == 2:
+            returned = self._ask(
+                f"i2c_1_read_uint16 0x{address:02x} 0x{register_address:04x}")
+        else:
+            returned = self._ask(
+                f"i2c_1_read_uint8 0x{address:02x} 0x{register_address:04x}")
+        register_data = int(returned, base=0)
+        # The other I2C function has this interface
+        return int.to_bytes(
+            int(register_data),
+            length=num_bytes, byteorder='big',
+            signed=False)
+
+    def i2c_1_write_payload(self, address: int, register_address: int, payload: Sequence) -> None:
+        if Version(self.version) >= Version("0.0.14"):
+            data = ' '.join([f"0x{val:02x}" for val in payload])
+            cmd = f"i2c_1_write_payload 0x{address:02x} 0x{register_address:02x} {data}"
+            self._ask(cmd)
+
+        else:
+            if len(payload) == 1:
+                # Trying to write the network chips
+                data = int(payload[0])
+                self._ask(
+                    f"i2c_1_write_no_register_uint8 0x{address:02x} 0x{data:02x}")
+            elif len(payload) == 3:
+                # uint8
+                register_address = int.from_bytes(
+                    payload[0:2], byteorder='big', signed=False)
+                data = int.from_bytes(
+                    payload[2:3], byteorder='big', signed=False)
+                self._ask(
+                    f"i2c_1_write_uint8 "
+                    f"0x{address:02x} 0x{register_address:04x} 0x{data:02x}")
+            elif len(payload) == 4:
+                register_address = int.from_bytes(
+                    payload[0:2], byteorder='big', signed=False)
+                data = int.from_bytes(
+                    payload[2:4], byteorder='big', signed=False)
+                self._ask(
+                    f"i2c_1_write_uint16 "
+                    f"0x{address:02x} 0x{register_address:04x} 0x{data:04x}")
+            else:
+                raise NotImplementedError()
+
+    def i2c_1_read_payload(self, address: int, register_address: int, num_bytes: int) -> Sequence:
+        if Version(self.version) < Version("0.0.14"):
+            if num_bytes != 1:
+                raise NotImplementedError()
+            returned = self._ask(f"i2c_1_read_no_register_uint8 0x{address:02x}")
+            register_data = int(returned, base=0)
+            return int.to_bytes(
+                int(register_data),
+                length=num_bytes, byteorder='big',
+                signed=False)
+
+        cmd = f"i2c_1_read_payload 0x{address:02x} 0x{register_address:02x} {num_bytes}"
+        returned = self._ask(cmd)
+        register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
+        return register_data
+
     def gpio_digital_write(self, pin, value):
         """Call the ardunio DigitalWrite function.
 
