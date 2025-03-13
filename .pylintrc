@@ -4,6 +4,7 @@ ignore=_version.py,teensypower.py
 [MESSAGES CONTROL]
 enable=W3101
 disable=
+    C0302,  # too-many-lines
     C0114,  # missing-module-docstring
     C0115,  # missing-class-docstring
     C0116,  # missing-function-docstring
