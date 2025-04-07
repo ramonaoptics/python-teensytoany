@@ -67,13 +67,15 @@ class PlateTapper:
 
         self._teensy.analog_write_frequency(self._PWM_A_PIN, 100000)
 
-        if serial_number in known_devices.index:
-            self._has_direct_tap = known_devices.loc[serial_number].direct_tap
-            self._has_dampened_tap = known_devices.loc[serial_number].dampened_tap
-        else:
-            # By default enable both....
-            self._has_direct_tap = True
-            self._has_dampened_tap = True
+        # TODO before merge: figure out how to communicate which boards have
+        # which features
+        # if serial_number in known_devices.index:
+        #     self._has_direct_tap = known_devices.loc[serial_number].direct_tap
+        #     self._has_dampened_tap = known_devices.loc[serial_number].dampened_tap
+        # else:
+        # By default enable both....
+        self._has_direct_tap = True
+        self._has_dampened_tap = True
 
     @property
     def has_direct_tap(self):
