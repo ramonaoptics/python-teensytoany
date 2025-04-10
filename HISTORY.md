@@ -1,5 +1,10 @@
 # History
 
+## 0.8.0 (2025-04-10)
+
+* Automatically increase the timeout when issuing pulse commands to enable
+  longer pulse durations.
+
 ## 0.7.0 (2025-03-12)
 
 * Add support for Wire1 I2C interface.

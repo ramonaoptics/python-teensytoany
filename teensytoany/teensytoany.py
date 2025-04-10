@@ -1,5 +1,6 @@
 import os
 import subprocess
+from contextlib import contextmanager
 from time import sleep
 from typing import Sequence
 
@@ -705,18 +706,17 @@ class TeensyToAny:
                 # I want the "safe default" to be "low"
                 value_end = 0
 
+        cmd = f"gpio_digital_pulse {pin} {value} {value_end} {duration}"
+
         # We want to ensure that the command won't timeout
         # For this, we check that the pulse duration is less than
         # 80% of the time, or provide a 50 ms buffer. Whichever is bigger.
         maximum_duration = max(self._timeout * 0.8, self._timeout - 50E-3)
         if duration > maximum_duration:
-            raise ValueError(
-                f"The duration, {duration:g} seconds, must be smaller than "
-                f"{maximum_duration:g} seconds otherwise the the communication "
-                "might timeout. Consider increasing the timeout duration at "
-                "setup time."
-            )
-        self._ask(f"gpio_digital_pulse {pin} {value} {value_end} {duration}")
+            with self.increased_timeout(duration + 0.1):
+                self._ask(cmd)
+        else:
+            self._ask(cmd)
 
     def gpio_digital_read(self, pin):
         """Call the arduino DigitalRead function.
@@ -777,6 +777,15 @@ class TeensyToAny:
         if self._serial is not None:
             self._serial.timeout = value
         self._timeout = value
+
+    @contextmanager
+    def increased_timeout(self, value):
+        old_timeout = self.timeout
+        try:
+            self.timeout = value
+            yield
+        finally:
+            self.timeout = old_timeout
 
     def spi_begin(self):
         self._ask("spi_begin")
@@ -880,19 +889,16 @@ class TeensyToAny:
 
         """
 
+        cmd = f"analog_pulse {pin} {value} {value_end} {duration}"
         # We want to ensure that the command won't timeout
         # For this, we check that the pulse duration is less than
         # 80% of the time, or provide a 50 ms buffer. Whichever is bigger.
         maximum_duration = max(self._timeout * 0.8, self._timeout - 50E-3)
         if duration > maximum_duration:
-            raise ValueError(
-                f"The duration, {duration:g} seconds, must be smaller than "
-                f"{maximum_duration:g} seconds otherwise the the communication "
-                "might timeout. Consider increasing the timeout duration at "
-                "setup time."
-            )
-
-        self._ask(f"analog_pulse {pin} {value} {value_end} {duration}")
+            with self.increased_timeout(duration + 0.1):
+                self._ask(cmd)
+        else:
+            self._ask(cmd)
 
     def analog_read(self, pin: int):
         """Call the arduino analogRead function.
