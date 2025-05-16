@@ -10,3 +10,4 @@ disable=
     C0116,  # missing-function-docstring
     R0904,  # too-many-public-methods
     R0914,  # too-many-locals
+    R0913,  # too-many-arguments -- perhaps we can increase this limit from 5???
