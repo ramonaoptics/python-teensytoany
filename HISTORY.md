@@ -1,5 +1,9 @@
 # History
 
+## 0.9.0 (2025-05-16)
+
+* Provide capabilities to program devices with board specific firmwares. #38
+
 ## 0.8.0 (2025-04-10)
 
 * Automatically increase the timeout when issuing pulse commands to enable
