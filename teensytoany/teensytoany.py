@@ -273,10 +273,11 @@ class TeensyToAny:
         )
 
         import requests  # pylint: disable=import-outside-toplevel
+        release_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{version}/"
         if variant is None:
-            file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{version}/firmware_{mcu.lower()}.hex"  # noqa # pylint: disable=line-too-long
+            file_url = release_url + f"firmware_{mcu.lower()}.hex"
         else:
-            file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{version}/firmware_{mcu.lower()}_{variant}.hex"  # noqa # pylint: disable=line-too-long
+            file_url = release_url + f"firmware_{mcu.lower()}_{variant}.hex"
         response = requests.get(file_url, timeout=timeout)
         if response.status_code != 200:
             raise RuntimeError("Failed to download firmware")
