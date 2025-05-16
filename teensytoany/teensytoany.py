@@ -291,7 +291,16 @@ class TeensyToAny:
         return firmware_filename
 
     @staticmethod
-    def program_firmware(serial_number=None, *, mcu=None, version=None, variant: str=None, timeout=2):
+    def program_firmware(
+        serial_number=None, 
+        *, 
+        mcu=None, 
+        version=None, 
+        variant: str=None, 
+        verbose=False, 
+        wait=False,
+        timeout=2,
+    ):
         if serial_number is None:
             available_serial_numbers = TeensyToAny.list_all_serial_numbers()
             if len(available_serial_numbers) == 0:
@@ -319,7 +328,6 @@ class TeensyToAny:
             version=version, 
             variant=variant
         )
-        print(firmware_filename)
 
         if not firmware_filename.is_file():
             TeensyToAny.download_firmware(
@@ -329,9 +337,19 @@ class TeensyToAny:
                 timeout=timeout
             )
 
+        if verbose:
+            verbose = ['-v',]
+        else:
+            verbose = []
+
+        if wait:
+            wait = ['-w',]
+        else:
+            wait = []
         cmd_list = [
             'teensy_loader_cli',
             '-s',
+        ] + verbose + wait + [
             f'--mcu={mcu}',
             f'--serial-number={serial_number}',
             str(firmware_filename),

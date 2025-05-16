@@ -68,7 +68,7 @@ def teensytoany_programmer(
         serial_number, 
         mcu=mcu, 
         version=firmware_version, 
-        firmware_variant=firmware_variant
+        variant=firmware_variant
     )
     teensy = teensytoany.TeensyToAny(serial_number)
     print(f"TeensyToAny version: {teensy.version}")
