@@ -53,13 +53,13 @@ def teensytoany_programmer(
         for mcu_to_download in ['TEENSY40', 'TEENSY32']:
             if firmware_version is None:
                 firmware_version = teensytoany.TeensyToAny.get_latest_available_firmware_version(
-                    mcu=mcu_to_download, firmware_variant=firmware_variant, online=True, local=False
+                    mcu=mcu_to_download, variant=firmware_variant, online=True, local=False
                 )
             print(f"Downloading {variant_str}firmware version {firmware_version} for {mcu}.")
             teensytoany.TeensyToAny.download_firmware(
                 mcu=mcu, 
                 version=firmware_version, 
-                firmware_variant=firmware_variant
+                variant=firmware_variant
             )
         return
 
