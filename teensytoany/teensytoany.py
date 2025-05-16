@@ -145,7 +145,8 @@ class TeensyToAny:
         try:
             if online:
                 latest = TeensyToAny._get_latest_available_firmware_online(
-                    timeout=timeout)
+                    timeout=timeout
+                )
         except Exception:  # pylint: disable=broad-except
             pass
 
@@ -197,7 +198,7 @@ class TeensyToAny:
     def mcu(self):
         return self._ask('mcu')
 
-    def _update_firmware(self, *, mcu=None, force=False, timeout=2):
+    def _update_firmware(self, *, mcu=None, variant: str=None, force=False, timeout=2):
         current_version = self.version
         serial_number = self.serial_number
         if mcu is None:
@@ -220,6 +221,7 @@ class TeensyToAny:
                 serial_number,
                 mcu=mcu,
                 version=latest_version,
+                variant=variant,
                 timeout=timeout
             )
             # Reraise any exceptions that were caught
@@ -242,9 +244,12 @@ class TeensyToAny:
         return versions
 
     @staticmethod
-    def _generate_firmware_filename(*, mcu, version):
+    def _generate_firmware_filename(*, mcu, version, variant: str=None):
         firmware_dir = TeensyToAny._generate_firmware_directory(mcu=mcu)
-        firmware_filename = firmware_dir / f"{version}" / "firmware.hex"
+        if variant is None:
+            firmware_filename = firmware_dir / f"{version}" / "firmware.hex"
+        else:
+            firmware_filename = firmware_dir / f"{version}" / f"firmware_{variant}.hex"
         return firmware_filename
 
     @staticmethod
@@ -260,11 +265,19 @@ class TeensyToAny:
         return firmware_dir
 
     @staticmethod
-    def download_firmware(*, mcu, version, timeout=2):
-        firmware_filename = TeensyToAny._generate_firmware_filename(mcu=mcu, version=version)
+    def download_firmware(*, mcu, version, variant: str=None, timeout=2):
+        firmware_filename = TeensyToAny._generate_firmware_filename(
+            mcu=mcu,
+            version=version,
+            variant=variant
+        )
 
         import requests  # pylint: disable=import-outside-toplevel
-        file_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{version}/firmware_{mcu.lower()}.hex"  # noqa # pylint: disable=line-too-long
+        release_url = f"https://github.com/ramonaoptics/teensy-to-any/releases/download/{version}/"
+        if variant is None:
+            file_url = release_url + f"firmware_{mcu.lower()}.hex"
+        else:
+            file_url = release_url + f"firmware_{mcu.lower()}_{variant}.hex"
         response = requests.get(file_url, timeout=timeout)
         if response.status_code != 200:
             raise RuntimeError("Failed to download firmware")
@@ -279,7 +292,16 @@ class TeensyToAny:
         return firmware_filename
 
     @staticmethod
-    def program_firmware(serial_number=None, *, mcu=None, version=None, timeout=2):
+    def program_firmware(
+        serial_number=None,
+        *,
+        mcu=None,
+        version=None,
+        variant: str=None,
+        verbose=False,
+        wait=False,
+        timeout=2,
+    ):
         if serial_number is None:
             available_serial_numbers = TeensyToAny.list_all_serial_numbers()
             if len(available_serial_numbers) == 0:
@@ -302,14 +324,33 @@ class TeensyToAny:
             # there is no serial number specificity
             raise RuntimeError("We do not supporting programing TeensyToAny devices on Windows")
 
-        firmware_filename = TeensyToAny._generate_firmware_filename(mcu=mcu, version=version)
+        firmware_filename = TeensyToAny._generate_firmware_filename(
+            mcu=mcu,
+            version=version,
+            variant=variant
+        )
 
         if not firmware_filename.is_file():
-            TeensyToAny.download_firmware(mcu=mcu, version=version, timeout=timeout)
+            TeensyToAny.download_firmware(
+                mcu=mcu,
+                version=version,
+                variant=variant,
+                timeout=timeout
+            )
 
+        if verbose:
+            verbose = ['-v',]
+        else:
+            verbose = []
+
+        if wait:
+            wait = ['-w',]
+        else:
+            wait = []
         cmd_list = [
             'teensy_loader_cli',
             '-s',
+        ] + verbose + wait + [
             f'--mcu={mcu}',
             f'--serial-number={serial_number}',
             str(firmware_filename),
@@ -573,9 +614,9 @@ class TeensyToAny:
         self._ask(cmd)
 
     def i2c_1_write_read(self,
-                       address: int,
-                       data: Sequence,
-                       num_bytes: int) -> Sequence:
+                         address: int,
+                         data: Sequence,
+                         num_bytes: int) -> Sequence:
         if len(data) != 2:
             raise ValueError("data must be of length 2")
         if num_bytes not in [1, 2]:
