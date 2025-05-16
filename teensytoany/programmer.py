@@ -55,19 +55,19 @@ def teensytoany_programmer(
                 firmware_version = teensytoany.TeensyToAny.get_latest_available_firmware_version(
                     mcu=mcu_to_download, online=True, local=False
                 )
-            print(f"Downloading {variant_str}firmware version {firmware_version} for {mcu_to_download}.")
+            print(f"Downloading {variant_str}firmware version {firmware_version} for {mcu_to_download}.") # noqa
             teensytoany.TeensyToAny.download_firmware(
-                mcu=mcu_to_download, 
-                version=firmware_version, 
+                mcu=mcu_to_download,
+                version=firmware_version,
                 variant=firmware_variant
             )
         return
 
-    print(f'Programming Teensy with:')
+    print('Programming Teensy with:')
     teensytoany.TeensyToAny.program_firmware(
-        serial_number, 
-        mcu=mcu, 
-        version=firmware_version, 
+        serial_number,
+        mcu=mcu,
+        version=firmware_version,
         variant=firmware_variant
     )
     teensy = teensytoany.TeensyToAny(serial_number)
@@ -76,5 +76,6 @@ def teensytoany_programmer(
     print(f"TeensyToAny serial_number: {teensy.serial_number}")
     teensy.close()
 
-if  __name__ == '__main__':
+
+if __name__ == '__main__':
     teensytoany_programmer()

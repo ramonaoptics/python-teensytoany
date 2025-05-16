@@ -143,7 +143,7 @@ class TeensyToAny:
             if len(local_versions) > 0:
                 latest = local_versions[-1]
         try:
-            if online:                
+            if online:
                 latest = TeensyToAny._get_latest_available_firmware_online(
                     timeout=timeout
                 )
@@ -267,8 +267,8 @@ class TeensyToAny:
     @staticmethod
     def download_firmware(*, mcu, version, variant: str=None, timeout=2):
         firmware_filename = TeensyToAny._generate_firmware_filename(
-            mcu=mcu, 
-            version=version, 
+            mcu=mcu,
+            version=version,
             variant=variant
         )
 
@@ -292,12 +292,12 @@ class TeensyToAny:
 
     @staticmethod
     def program_firmware(
-        serial_number=None, 
-        *, 
-        mcu=None, 
-        version=None, 
-        variant: str=None, 
-        verbose=False, 
+        serial_number=None,
+        *,
+        mcu=None,
+        version=None,
+        variant: str=None,
+        verbose=False,
         wait=False,
         timeout=2,
     ):
@@ -324,16 +324,16 @@ class TeensyToAny:
             raise RuntimeError("We do not supporting programing TeensyToAny devices on Windows")
 
         firmware_filename = TeensyToAny._generate_firmware_filename(
-            mcu=mcu, 
-            version=version, 
+            mcu=mcu,
+            version=version,
             variant=variant
         )
 
         if not firmware_filename.is_file():
             TeensyToAny.download_firmware(
-                mcu=mcu, 
-                version=version, 
-                variant=variant, 
+                mcu=mcu,
+                version=version,
+                variant=variant,
                 timeout=timeout
             )
 
@@ -613,9 +613,9 @@ class TeensyToAny:
         self._ask(cmd)
 
     def i2c_1_write_read(self,
-                       address: int,
-                       data: Sequence,
-                       num_bytes: int) -> Sequence:
+                         address: int,
+                         data: Sequence,
+                         num_bytes: int) -> Sequence:
         if len(data) != 2:
             raise ValueError("data must be of length 2")
         if num_bytes not in [1, 2]:
