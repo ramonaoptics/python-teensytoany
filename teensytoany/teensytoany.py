@@ -595,6 +595,11 @@ class TeensyToAny:
         register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
         return register_data
 
+    def i2c_ping(self, address: int):
+        """Return None if device found. Raises error if no device found."""
+        cmd = f"i2c_ping 0x{address:02x}"
+        self._ask(cmd)
+
     def i2c_1_init(self, baud_rate: int=100_100, timeout=200_000, register_space=1):
         cmd = f"i2c_1_init {baud_rate:d} {timeout:d} {register_space:d}"
         self._ask(cmd)
@@ -686,6 +691,11 @@ class TeensyToAny:
         returned = self._ask(cmd)
         register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
         return register_data
+
+    def i2c_1_ping(self, address: int):
+        """Return None if device found. Raises error if no device found."""
+        cmd = f"i2c_1_ping 0x{address:02x}"
+        self._ask(cmd)
 
     def gpio_digital_write(self, pin, value):
         """Call the ardunio DigitalWrite function.
