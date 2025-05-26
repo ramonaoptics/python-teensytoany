@@ -589,6 +589,12 @@ class TeensyToAny:
         register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
         return register_data
 
+    def i2c_read_payload_no_register(self, address: int, num_bytes: int):
+        cmd = f"i2c_read_payload_no_register 0x{address:02x} {num_bytes}"
+        returned = self._ask(cmd)
+        register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
+        return register_data
+
     def i2c_1_init(self, baud_rate: int=100_100, timeout=200_000, register_space=1):
         cmd = f"i2c_1_init {baud_rate:d} {timeout:d} {register_space:d}"
         self._ask(cmd)
@@ -670,17 +676,13 @@ class TeensyToAny:
                 raise NotImplementedError()
 
     def i2c_1_read_payload(self, address: int, register_address: int, num_bytes: int) -> Sequence:
-        if Version(self.version) < Version("0.0.14"):
-            if num_bytes != 1:
-                raise NotImplementedError()
-            returned = self._ask(f"i2c_1_read_no_register_uint8 0x{address:02x}")
-            register_data = int(returned, base=0)
-            return int.to_bytes(
-                int(register_data),
-                length=num_bytes, byteorder='big',
-                signed=False)
-
         cmd = f"i2c_1_read_payload 0x{address:02x} 0x{register_address:02x} {num_bytes}"
+        returned = self._ask(cmd)
+        register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
+        return register_data
+
+    def i2c_1_read_payload_no_register(self, address: int, num_bytes: int):
+        cmd = f"i2c_1_read_payload_no_register 0x{address:02x} {num_bytes}"
         returned = self._ask(cmd)
         register_data = [int(val, base=0) for val in returned.split()]  # returns big endian
         return register_data
