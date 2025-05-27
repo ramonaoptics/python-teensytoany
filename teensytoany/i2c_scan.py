@@ -25,7 +25,10 @@ from teensytoany import TeensyToAny
     '-7',
     is_flag=True,
     default=False,
-    help='Report addresses in 7-bit mode instead of 8-bit mode. By default, addresses are reported in 8-bit mode.',
+    help=(
+        'Report addresses in 7-bit mode instead of 8-bit mode. '
+        'By default, addresses are reported in 8-bit mode.'
+    ),
 )
 @click.option(
     '--baud-rate',
