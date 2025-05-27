@@ -10,16 +10,20 @@ import teensytoany
 @click.option('--seven-bit-mode', '-7', is_flag=True, default=False,
               help='Report addresses in 7-bit mode instead of 8-bit mode.')
 @click.version_option(teensytoany.__version__)
-def main(serial_number, interface, seven_bit_mode):
+def main(
+    serial_number=None,
+    interface=0,
+    seven_bit_mode=False,
+):
     i2c_scan(
         serial_number=serial_number,
         interface=interface,
-        seven_bit_mode=seven_bit_mode
+        seven_bit_mode=seven_bit_mode,
     )
 
 
 def i2c_scan(serial_number=None, interface=0, seven_bit_mode=False):
-    from teensytoany import TeensyToAny
+    from teensytoany import TeensyToAny  # noqa
     teensy = TeensyToAny(serial_number=serial_number)
 
     for address_7bit in range(1, 128):
