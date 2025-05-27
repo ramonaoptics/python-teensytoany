@@ -1,5 +1,6 @@
 import click
 import teensytoany
+from teensytoany import TeensyToAny
 
 
 @click.command(epilog=f"Version {teensytoany.__version__}")
@@ -23,7 +24,6 @@ def main(
 
 
 def i2c_scan(serial_number=None, interface=0, seven_bit_mode=False):
-    from teensytoany import TeensyToAny  # noqa
     teensy = TeensyToAny(serial_number=serial_number)
 
     for address_7bit in range(1, 128):
