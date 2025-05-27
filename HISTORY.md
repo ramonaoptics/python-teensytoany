@@ -1,5 +1,9 @@
 # History
 
+## 0.10.1 (2025-05-27)
+
+* Attempt to fix i2c command line utility by correctly initializing the I2C bus.
+
 ## 0.10.0 (2025-05-26)
 
 * Provide an i2c scan capabilities through the python api as well as a command
