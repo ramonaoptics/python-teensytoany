@@ -1,5 +1,10 @@
 # History
 
+## 0.10.0 (2025-05-26)
+
+* Provide an i2c scan capabilities through the python api as well as a command
+  line utility: `teensytoany_i2c_scan`.
+
 ## 0.9.0 (2025-05-16)
 
 * Provide capabilities to program devices with board specific firmwares. #38
