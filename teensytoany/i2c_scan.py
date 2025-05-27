@@ -5,15 +5,41 @@ from teensytoany import TeensyToAny
 
 
 @click.command(epilog=f"Version {teensytoany.__version__}")
-@click.option('--serial-number', '-s', type=str, default=None,
-              help='Serial number of the Teensy device.')
-@click.option('--interface', '-i', type=int, default=0,
-              help='I2C interface to use (0 for I2C, 1 for I2C1).')
-@click.option('--seven-bit-mode', '-7', is_flag=True, default=False,
-              help='Report addresses in 7-bit mode instead of 8-bit mode.')
-@click.option('--verbose', is_flag=True, default=False,
-              help='Report in verbose mode, print out all pinged addresses.')
-@click.argument('--baud-rate', default=100_100, help='Baud rate for the I2C bus')
+@click.option(
+    '--serial-number', '-s',
+    type=str,
+    default=None,
+    show_default=False,
+    help='Serial number of the Teensy device.'
+)
+@click.option(
+    '--interface',
+    '-i',
+    type=int,
+    default=0,
+    show_default=True,
+    help='I2C interface to use (0 for I2C, 1 for I2C1).'
+)
+@click.option(
+    '--seven-bit-mode',
+    '-7',
+    is_flag=True,
+    default=False,
+    help='Report addresses in 7-bit mode instead of 8-bit mode. By default, addresses are reported in 8-bit mode.',
+)
+@click.option(
+    '--baud-rate',
+    type=int,
+    default=100_100,
+    show_default=True,
+    help='Baud rate for the I2C bus.',
+)
+@click.option(
+    '--verbose',
+    is_flag=True,
+    default=False,
+    help='Report in verbose mode, print out all pinged addresses.',
+)
 @click.version_option(teensytoany.__version__)
 def main(
     serial_number=None,
