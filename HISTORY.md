@@ -1,5 +1,11 @@
 # History
 
+## 0.10.2 (2025-06-02)
+
+* Fix I2C scanning command line utility by absorping the errors when no device
+  is detected on the bus. Tested with a Teensy 4.0 and Sparkfun ISM330DHCX
+  QWIIC board.
+
 ## 0.10.1 (2025-05-27)
 
 * Attempt to fix i2c command line utility by correctly initializing the I2C bus.
