@@ -51,7 +51,7 @@ def main(
     baud_rate=100_100,
     verbose=False,
 ):
-    i2c_scan(
+    return i2c_scan(
         serial_number=serial_number,
         interface=interface,
         baud_rate=baud_rate,
@@ -97,7 +97,14 @@ def i2c_scan(
     seven_bit_mode=False,
     verbose=False,
 ):
+    from packaging.version import Version
+
     teensy = TeensyToAny(serial_number=serial_number)
+    if Version(teensy.version) < Version('0.12.0'):
+        teensy.close()
+        raise RuntimeError(
+            "This script requires TeensyToAny version 0.12.0 or higher."
+        )
     try:
         _scan_and_print(
             teensy,
