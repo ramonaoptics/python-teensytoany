@@ -79,6 +79,8 @@ def _scan_and_print(teensy, interface, baud_rate, seven_bit_mode, verbose):
                 print(f"Found device at address 0x{address_7bit:02X}")
             else:
                 print(f"Found device at address 0x{address:02X}")
+        except RuntimeError:
+            pass
         finally:
             if verbose and seven_bit_mode:
                 print(f"No device found at addr 0x{address_7bit:02X}")
