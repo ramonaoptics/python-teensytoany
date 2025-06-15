@@ -3,6 +3,7 @@ import subprocess
 from contextlib import contextmanager
 from time import sleep
 from typing import Sequence
+from warnings import warn
 
 from packaging.version import Version
 from serial import LF, Serial
@@ -51,7 +52,7 @@ class TeensyToAny:
         computer but that may not be associated with the TeensyToAny boards.
 
         """
-        pairs = TeensyToAny._device_serial_number_pairs(
+        pairs = TeensyToAny.device_serial_number_pairs(
             serial_numbers=serial_numbers)
         devices, _ = zip(*pairs)
         return devices
@@ -83,7 +84,7 @@ class TeensyToAny:
         computer but that may not be associated with the TeensyToAny boards.
 
         """
-        pairs = TeensyToAny._device_serial_number_pairs(
+        pairs = TeensyToAny.device_serial_number_pairs(
             serial_numbers=serial_numbers,
             device_name=device_name,
             manufacturer=manufacturer,
@@ -136,6 +137,24 @@ class TeensyToAny:
 
     @staticmethod
     def _device_serial_number_pairs(
+        serial_numbers=None,
+        *,
+        device_name=None,
+        manufacturer="TeensyToAny",
+    ):
+        warn(
+            "The TeensyToAny._device_serial_number_pairs function is deprecated. "
+            "Use TeensyToAny.device_serial_number_pairs instead.",
+            stacklevel=2,
+        )
+        return TeensyToAny.device_serial_number_pairs(
+            serial_numbers=serial_numbers,
+            device_name=device_name,
+            manufacturer=manufacturer,
+        )
+
+    @staticmethod
+    def device_serial_number_pairs(
         serial_numbers=None,
         *,
         device_name=None,
@@ -360,13 +379,24 @@ class TeensyToAny:
             self.close()
             raise e
 
+    def __enter__(self):
+        """Context manager for opening the device."""
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Context manager for closing the device."""
+        self.close()
+        if exc_type is not None:
+            raise exc_value.with_traceback(traceback)
+        return False
+
     def _open(self):
         if self._requested_serial_number is None:
             serial_numbers = None
         else:
             serial_numbers = [self._requested_serial_number]
 
-        port, found_serial_number = self._device_serial_number_pairs(
+        port, found_serial_number = self.device_serial_number_pairs(
             serial_numbers=serial_numbers, device_name=self._device_name)[0]
 
         self._serial = Serial(

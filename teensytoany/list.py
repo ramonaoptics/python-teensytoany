@@ -1,7 +1,6 @@
 import sys
 
 import click
-from packaging.version import Version
 
 import teensytoany
 from teensytoany import TeensyToAny
@@ -19,7 +18,10 @@ from teensytoany import TeensyToAny
     '--teensyduino',
     is_flag=True,
     default=False,
-    help="List devices with manufacturer 'TeensyToAny'. This is a shortcut for --manufacturer=TeensyToAny",
+    help=(
+        "List devices with manufacturer 'TeensyToAny'. "
+        "This is a shortcut for --manufacturer=TeensyToAny"
+    ),
 )
 @click.version_option(teensytoany.__version__)
 def main(
@@ -33,8 +35,8 @@ def main(
         manufacturer = "Teensyduino"
 
     try:
-        device_serial_numbers = TeensyToAny._device_serial_number_pairs(manufacturer=manufacturer)
-    except RuntimeError as e:
+        device_serial_numbers = TeensyToAny.device_serial_number_pairs(manufacturer=manufacturer)
+    except RuntimeError:
         click.echo(f"Error: Could not find any devices with manufacturer '{manufacturer}'.")
         sys.exit(1)
 
