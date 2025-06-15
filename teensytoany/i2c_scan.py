@@ -97,7 +97,7 @@ def i2c_scan(
     seven_bit_mode=False,
     verbose=False,
 ):
-    from packaging.version import Version
+    from packaging.version import Version  # pylint: disable=import-outside-toplevel
 
     teensy = TeensyToAny(serial_number=serial_number)
     if Version(teensy.version) < Version('0.12.0'):
