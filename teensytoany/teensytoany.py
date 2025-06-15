@@ -8,55 +8,7 @@ from packaging.version import Version
 from serial import LF, Serial
 from serial.tools.list_ports import comports
 
-__all__ = ['TeensyToAny', 'known_devices', 'known_serial_numbers']
-
-known_devices = [
-    # Example device structure
-    # These include useful information about the hardware that is created and
-    # burned in with the serial numbers.
-    # Since the same VID/PID can be assigned to multiple devices,
-    # We must log the individual serial numbers to know what they all do.
-    {
-        'serial_number': '4725230',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '5032260',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '4725070',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '4726520',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '5032540',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '4728790',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '5955040',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-]
-
-known_serial_numbers = [
-    d['serial_number']
-    for d in known_devices
-]
+__all__ = ['TeensyToAny']
 
 
 class TeensyToAny:
@@ -76,8 +28,6 @@ class TeensyToAny:
     ]
 
     _device_name = "TeensyToAny"
-    _known_device = known_devices
-    _known_serial_numbers = known_serial_numbers
 
     @staticmethod
     def find(serial_numbers=None):
@@ -185,7 +135,7 @@ class TeensyToAny:
             (c.device, c.serial_number)
             for c in com
             if ((c.vid, c.pid) in TeensyToAny.VID_PID_s and
-                (serial_numbers is None or
+                ((serial_numbers is None and c.manufacturer == "TeensyToAny") or
                  c.serial_number in serial_numbers))
         ]
         if len(pairs) == 0:
@@ -399,7 +349,7 @@ class TeensyToAny:
 
     def _open(self):
         if self._requested_serial_number is None:
-            serial_numbers = self._known_serial_numbers
+            serial_numbers = None
         else:
             serial_numbers = [self._requested_serial_number]
 
