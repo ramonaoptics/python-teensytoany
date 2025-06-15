@@ -66,18 +66,17 @@ def teensytoany_programmer(
             )
         return
 
-    print('Programming Teensy with:')
+    print('Programming please wait...')
     teensytoany.TeensyToAny.program_firmware(
         serial_number,
         mcu=mcu,
         version=firmware_version,
         variant=firmware_variant
     )
-    teensy = teensytoany.TeensyToAny(serial_number)
-    print(f"TeensyToAny version: {teensy.version}")
-    print(f"TeensyToAny variant: {firmware_variant}")
-    print(f"TeensyToAny serial_number: {teensy.serial_number}")
-    teensy.close()
+    with teensytoany.TeensyToAny(serial_number) as teensy:
+        print(f"TeensyToAny version: {teensy.version}")
+        print(f"TeensyToAny variant: {firmware_variant}")
+        print(f"TeensyToAny serial_number: {teensy.serial_number}")
 
 
 if __name__ == '__main__':

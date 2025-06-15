@@ -3,60 +3,13 @@ import subprocess
 from contextlib import contextmanager
 from time import sleep
 from typing import Sequence
+from warnings import warn
 
 from packaging.version import Version
 from serial import LF, Serial
 from serial.tools.list_ports import comports
 
-__all__ = ['TeensyToAny', 'known_devices', 'known_serial_numbers']
-
-known_devices = [
-    # Example device structure
-    # These include useful information about the hardware that is created and
-    # burned in with the serial numbers.
-    # Since the same VID/PID can be assigned to multiple devices,
-    # We must log the individual serial numbers to know what they all do.
-    {
-        'serial_number': '4725230',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '5032260',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '4725070',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '4726520',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '5032540',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '4728790',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-    {
-        'serial_number': '5955040',
-        'device_name': 'teensytoany',
-        'mcu': 'TEENSY32',
-    },
-]
-
-known_serial_numbers = [
-    d['serial_number']
-    for d in known_devices
-]
+__all__ = ['TeensyToAny']
 
 
 class TeensyToAny:
@@ -76,8 +29,6 @@ class TeensyToAny:
     ]
 
     _device_name = "TeensyToAny"
-    _known_device = known_devices
-    _known_serial_numbers = known_serial_numbers
 
     @staticmethod
     def find(serial_numbers=None):
@@ -101,13 +52,18 @@ class TeensyToAny:
         computer but that may not be associated with the TeensyToAny boards.
 
         """
-        pairs = TeensyToAny._device_serial_number_pairs(
+        pairs = TeensyToAny.device_serial_number_pairs(
             serial_numbers=serial_numbers)
         devices, _ = zip(*pairs)
         return devices
 
     @staticmethod
-    def list_all_serial_numbers(serial_numbers=None, *, device_name=None):
+    def list_all_serial_numbers(
+        serial_numbers=None,
+        *,
+        device_name=None,
+        manufacturer="TeensyToAny",
+    ):
         """Find all the currently connected TeensyToAny serial numbers.
 
         Parameters
@@ -128,8 +84,11 @@ class TeensyToAny:
         computer but that may not be associated with the TeensyToAny boards.
 
         """
-        pairs = TeensyToAny._device_serial_number_pairs(
-            serial_numbers=serial_numbers, device_name=device_name)
+        pairs = TeensyToAny.device_serial_number_pairs(
+            serial_numbers=serial_numbers,
+            device_name=device_name,
+            manufacturer=manufacturer,
+        )
         _, serial_numbers = zip(*pairs)
         return serial_numbers
 
@@ -177,7 +136,30 @@ class TeensyToAny:
         return latest_release_version
 
     @staticmethod
-    def _device_serial_number_pairs(serial_numbers=None, *, device_name=None):
+    def _device_serial_number_pairs(
+        serial_numbers=None,
+        *,
+        device_name=None,
+        manufacturer="TeensyToAny",
+    ):
+        warn(
+            "The TeensyToAny._device_serial_number_pairs function is deprecated. "
+            "Use TeensyToAny.device_serial_number_pairs instead.",
+            stacklevel=2,
+        )
+        return TeensyToAny.device_serial_number_pairs(
+            serial_numbers=serial_numbers,
+            device_name=device_name,
+            manufacturer=manufacturer,
+        )
+
+    @staticmethod
+    def device_serial_number_pairs(
+        serial_numbers=None,
+        *,
+        device_name=None,
+        manufacturer="TeensyToAny",
+    ):
         if device_name is None:
             device_name = TeensyToAny._device_name
         com = comports()
@@ -185,8 +167,8 @@ class TeensyToAny:
             (c.device, c.serial_number)
             for c in com
             if ((c.vid, c.pid) in TeensyToAny.VID_PID_s and
-                (serial_numbers is None or
-                 c.serial_number in serial_numbers))
+                ((serial_numbers is None and c.manufacturer == manufacturer) or
+                 (serial_numbers and c.serial_number in serial_numbers)))
         ]
         if len(pairs) == 0:
             raise RuntimeError(
@@ -397,13 +379,24 @@ class TeensyToAny:
             self.close()
             raise e
 
+    def __enter__(self):
+        """Context manager for opening the device."""
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Context manager for closing the device."""
+        self.close()
+        if exc_type is not None:
+            raise exc_value.with_traceback(traceback)
+        return False
+
     def _open(self):
         if self._requested_serial_number is None:
-            serial_numbers = self._known_serial_numbers
+            serial_numbers = None
         else:
             serial_numbers = [self._requested_serial_number]
 
-        port, found_serial_number = self._device_serial_number_pairs(
+        port, found_serial_number = self.device_serial_number_pairs(
             serial_numbers=serial_numbers, device_name=self._device_name)[0]
 
         self._serial = Serial(

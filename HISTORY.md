@@ -1,5 +1,10 @@
 # History
 
+## 0.11.0 (2025-06-14)
+
+* Try to automatically connect to devices with Manufacturer TeensyToAny. This
+  requires firmware version 0.13.0 and up.
+
 ## 0.10.2 (2025-06-02)
 
 * Fix I2C scanning command line utility by absorping the errors when no device

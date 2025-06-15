@@ -1,4 +1,5 @@
 import click
+from packaging.version import Version
 
 import teensytoany
 from teensytoany import TeensyToAny
@@ -97,7 +98,6 @@ def i2c_scan(
     seven_bit_mode=False,
     verbose=False,
 ):
-    from packaging.version import Version
 
     teensy = TeensyToAny(serial_number=serial_number)
     if Version(teensy.version) < Version('0.12.0'):
