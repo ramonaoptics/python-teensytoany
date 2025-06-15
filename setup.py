@@ -53,6 +53,7 @@ setup(
         'console_scripts': [
             'teensytoany_programmer=teensytoany.programmer:teensytoany_programmer',
             'teensytoany_i2c_scan=teensytoany.i2c_scan:main',
+            'teensytoany_list=teensytoany.list:main',
         ],
     },
     packages=find_packages(include=['teensytoany']),

@@ -57,7 +57,12 @@ class TeensyToAny:
         return devices
 
     @staticmethod
-    def list_all_serial_numbers(serial_numbers=None, *, device_name=None):
+    def list_all_serial_numbers(
+        serial_numbers=None,
+        *,
+        device_name=None,
+        manufacturer="TeensyToAny",
+    ):
         """Find all the currently connected TeensyToAny serial numbers.
 
         Parameters
@@ -79,7 +84,10 @@ class TeensyToAny:
 
         """
         pairs = TeensyToAny._device_serial_number_pairs(
-            serial_numbers=serial_numbers, device_name=device_name)
+            serial_numbers=serial_numbers,
+            device_name=device_name,
+            manufacturer=manufacturer,
+        )
         _, serial_numbers = zip(*pairs)
         return serial_numbers
 
@@ -127,7 +135,12 @@ class TeensyToAny:
         return latest_release_version
 
     @staticmethod
-    def _device_serial_number_pairs(serial_numbers=None, *, device_name=None):
+    def _device_serial_number_pairs(
+        serial_numbers=None,
+        *,
+        device_name=None,
+        manufacturer="TeensyToAny",
+    ):
         if device_name is None:
             device_name = TeensyToAny._device_name
         com = comports()
@@ -135,8 +148,8 @@ class TeensyToAny:
             (c.device, c.serial_number)
             for c in com
             if ((c.vid, c.pid) in TeensyToAny.VID_PID_s and
-                ((serial_numbers is None and c.manufacturer == "TeensyToAny") or
-                 c.serial_number in serial_numbers))
+                ((serial_numbers is None and c.manufacturer == manufacturer) or
+                 (serial_numbers and c.serial_number in serial_numbers)))
         ]
         if len(pairs) == 0:
             raise RuntimeError(
