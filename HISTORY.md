@@ -1,5 +1,9 @@
 # History
 
+## 0.11.1 (2025-07-18)
+
+* Provide an ability to define the device name at initialization time.
+
 ## 0.11.0 (2025-06-14)
 
 * Try to automatically connect to devices with Manufacturer TeensyToAny. This

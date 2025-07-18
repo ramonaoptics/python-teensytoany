@@ -28,8 +28,6 @@ class TeensyToAny:
         (0x16C0, 0x0483),
     ]
 
-    _device_name = "TeensyToAny"
-
     @staticmethod
     def find(serial_numbers=None):
         """Find all the serial ports that are associated with debuggers.
@@ -161,7 +159,7 @@ class TeensyToAny:
         manufacturer="TeensyToAny",
     ):
         if device_name is None:
-            device_name = TeensyToAny._device_name
+            device_name = "TeensyToAny"
         com = comports()
         pairs = [
             (c.device, c.serial_number)
@@ -348,6 +346,7 @@ class TeensyToAny:
         baudrate=115200,
         timeout=0.205,
         open=True,  # pylint: disable=redefined-builtin
+        device_name='TeensyToAny',
     ):
         """A class to control the TeensyToAny Debugger.
 
@@ -356,11 +355,22 @@ class TeensyToAny:
         serial_number: optional
             If provided, will attempt to open the specified serial number
 
+        baudrate: int
+            Baudrate to use for the serial connection.
+
         timeout: float
             Timeout before reading a command fails. A default value of 0.205
             was chosen so that the Serial connection adequately waits for
             hardware timeouts that may be as long as 0.200 seconds.
 
+        open: bool
+            If True, will automatically open the device upon initialization.
+            If False, the device must be opened manually using the `open` method.
+
+        device_name: str
+            The name of the device returned during certain error messages.
+
+            .. versionadded:: 0.11.1
         """
 
         self._requested_serial_number = serial_number
@@ -369,6 +379,7 @@ class TeensyToAny:
         self._serial = None
         self.serial_number = None
         self._version = None
+        self._device_name = device_name
         if open:
             self.open()
 

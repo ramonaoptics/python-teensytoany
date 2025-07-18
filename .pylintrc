@@ -8,6 +8,7 @@ disable=
     C0114,  # missing-module-docstring
     C0115,  # missing-class-docstring
     C0116,  # missing-function-docstring
+    R0902,  # too-many-instance-attributes
     R0904,  # too-many-public-methods
     R0914,  # too-many-locals
     R0913,  # too-many-arguments -- perhaps we can increase this limit from 5???
