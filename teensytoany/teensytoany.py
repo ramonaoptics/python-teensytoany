@@ -643,6 +643,32 @@ class TeensyToAny:
         cmd = f"i2c_end_transaction {str(stop).lower()}"
         self._ask(cmd)
 
+    def i2c_write_bulk(self, address: int, data: Sequence):
+        """Write large amounts of data to the I2C device in chunks.
+
+        This method automatically handles chunking data to fit within the I2C buffer
+        size and manages the transaction lifecycle.
+
+        Parameters
+        ----------
+        address: int
+            I2C device address
+        data: Sequence
+            Data to write (up to 8k bytes)
+        """
+        if len(data) > 8192:
+            raise ValueError("Data size exceeds maximum of 8192 bytes")
+
+        buffer_size = self.i2c_buffer_size()
+        self.i2c_begin_transaction(address)
+
+        try:
+            for i in range(0, len(data), buffer_size):
+                chunk = data[i:i + buffer_size]
+                self.i2c_write(chunk)
+        finally:
+            self.i2c_end_transaction()
+
     def i2c_buffer_size(self):
         """Get the maximum I2C buffer size for this board."""
         returned = self._ask("i2c_buffer_size")
@@ -783,6 +809,32 @@ class TeensyToAny:
         """End a transaction with the I2C_1 device."""
         cmd = f"i2c_1_end_transaction {str(stop).lower()}"
         self._ask(cmd)
+
+    def i2c_1_write_bulk(self, address: int, data: Sequence):
+        """Write large amounts of data to the I2C_1 device in chunks.
+        
+        This method automatically handles chunking data to fit within the I2C_1 buffer
+        size and manages the transaction lifecycle.
+        
+        Parameters
+        ----------
+        address: int
+            I2C_1 device address
+        data: Sequence
+            Data to write (up to 8k bytes)
+        """
+        if len(data) > 8192:
+            raise ValueError("Data size exceeds maximum of 8192 bytes")
+        
+        buffer_size = self.i2c_1_buffer_size()
+        self.i2c_1_begin_transaction(address)
+        
+        try:
+            for i in range(0, len(data), buffer_size):
+                chunk = data[i:i + buffer_size]
+                self.i2c_1_write(chunk)
+        finally:
+            self.i2c_1_end_transaction()
 
     def i2c_1_buffer_size(self):
         """Get the maximum I2C_1 buffer size for this board."""
