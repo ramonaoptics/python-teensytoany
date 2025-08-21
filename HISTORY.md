@@ -1,6 +1,6 @@
 # History
 
-## 0.12.0 (2025-01-XX)
+## 0.12.0 (2025-08-21)
 
 * Add missing command methods to provide complete interface to all firmware commands:
   - I2C commands: `i2c_reset`, `i2c_read_no_register_uint8`, `i2c_write_no_register_uint8`,

@@ -812,10 +812,10 @@ class TeensyToAny:
 
     def i2c_1_write_bulk(self, address: int, data: Sequence):
         """Write large amounts of data to the I2C_1 device in chunks.
-        
+
         This method automatically handles chunking data to fit within the I2C_1 buffer
         size and manages the transaction lifecycle.
-        
+
         Parameters
         ----------
         address: int
@@ -825,10 +825,10 @@ class TeensyToAny:
         """
         if len(data) > 8192:
             raise ValueError("Data size exceeds maximum of 8192 bytes")
-        
+
         buffer_size = self.i2c_1_buffer_size()
         self.i2c_1_begin_transaction(address)
-        
+
         try:
             for i in range(0, len(data), buffer_size):
                 chunk = data[i:i + buffer_size]
