@@ -14,9 +14,10 @@
     `register_write_uint32`
   - Startup/Demo commands: `post_serial_startup_commands_available`, `read_post_serial_startup_command`
   - Utility commands: `sleep_seconds`
-  - Info commands: `info`, `reboot`, `serialnumber`, `license`
+  - Info commands: `info`, `reboot`, `serialnumber`, `license`, `nop`
 * Add `i2c_write_bulk` and `i2c_1_write_bulk` methods for writing up to 8k bytes with automatic
   chunking and transaction management
+* Add `nop` command for testing purposes and comprehensive test suite
 
 ## 0.11.1 (2025-07-18)
 

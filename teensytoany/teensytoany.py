@@ -1313,3 +1313,7 @@ class TeensyToAny:
     def license(self):
         """Display the license information for the source code running on the teensy."""
         return self._ask("license")
+
+    def nop(self):
+        """No operation (does nothing)."""
+        self._ask("nop")
