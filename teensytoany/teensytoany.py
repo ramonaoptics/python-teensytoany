@@ -620,7 +620,8 @@ class TeensyToAny:
         cmd = f"i2c_write_no_register_uint8 0x{address:02x} 0x{data:02x}"
         self._ask(cmd)
 
-    def i2c_read_payload_uint16(self, address: int, register_address: int, num_bytes: int) -> Sequence:
+    def i2c_read_payload_uint16(self, address: int, register_address: int,
+                                num_bytes: int) -> Sequence:
         """Read up to 256 bytes from the I2C bus starting at a specified 16 bit register address."""
         cmd = f"i2c_read_payload_uint16 0x{address:02x} 0x{register_address:04x} {num_bytes}"
         returned = self._ask(cmd)
@@ -787,8 +788,9 @@ class TeensyToAny:
         cmd = f"i2c_1_write_no_register_uint8 0x{address:02x} 0x{data:02x}"
         self._ask(cmd)
 
-    def i2c_1_read_payload_uint16(self, address: int, register_address: int, num_bytes: int) -> Sequence:
-        """Read up to 256 bytes from the I2C_1 bus starting at a specified 16 bit register address."""
+    def i2c_1_read_payload_uint16(self, address: int, register_address: int,
+                                  num_bytes: int) -> Sequence:
+        """Read up to 256 bytes from the I2C_1 bus at a specified 16 bit register address."""
         cmd = f"i2c_1_read_payload_uint16 0x{address:02x} 0x{register_address:04x} {num_bytes}"
         returned = self._ask(cmd)
         register_data = [int(val, base=0) for val in returned.split()]
