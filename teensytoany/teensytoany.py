@@ -1300,6 +1300,17 @@ class TeensyToAny:
     def fastled_set_hue(self, led_index, hue):
         self._ask(f"fastled_set_hue {led_index} {hue}")
 
+    def fastled_set_max_refresh_rate(self, rate):
+        """Set the maximum refresh rate for FastLED.
+
+        Parameters
+        ----------
+        rate: int
+            Maximum refresh rate in Hz (1-800).
+            A rate of 0 will run as fast as possible.
+        """
+        self._ask(f"fastled_set_max_refresh_rate {rate}")
+
     def info(self):
         """Displays information about this TeensyToAny device."""
         return self._ask("info")
