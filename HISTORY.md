@@ -1,6 +1,6 @@
 # History
 
-## 0.12.1 (2025-01-27)
+## 0.12.1 (2025-08-22)
 
 * Add `fastled_set_max_refresh_rate` method to control FastLED refresh rate.
   - Supports rates from 1-800 Hz for normal operation
