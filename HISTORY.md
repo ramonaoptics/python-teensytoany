@@ -1,5 +1,11 @@
 # History
 
+## 0.12.1 (2025-08-22)
+
+* Add `fastled_set_max_refresh_rate` method to control FastLED refresh rate.
+  - Supports rates from 1-800 Hz for normal operation
+  - Rate of 0 runs as fast as possible
+
 ## 0.12.0 (2025-08-21)
 
 * Add missing command methods to provide complete interface to all firmware commands:
