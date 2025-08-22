@@ -1,5 +1,24 @@
 # History
 
+## 0.12.0 (2025-08-21)
+
+* Add missing command methods to provide complete interface to all firmware commands:
+  - I2C commands: `i2c_reset`, `i2c_read_no_register_uint8`, `i2c_write_no_register_uint8`,
+    `i2c_read_payload_uint16`, `i2c_begin_transaction`, `i2c_write`, `i2c_end_transaction`,
+    `i2c_buffer_size`, `i2c_write_bulk`
+  - I2C_1 commands: `i2c_1_reset`, `i2c_1_read_no_register_uint8`, `i2c_1_write_no_register_uint8`,
+    `i2c_1_read_payload_uint16`, `i2c_1_begin_transaction`, `i2c_1_write`, `i2c_1_end_transaction`,
+    `i2c_1_buffer_size`, `i2c_1_write_bulk`
+  - SPI commands: `spi_buffer_size`, `spi_set_clock_divider`
+  - Register commands: `register_read_uint8`, `register_write_uint8`, `register_read_uint32`,
+    `register_write_uint32`
+  - Startup/Demo commands: `post_serial_startup_commands_available`, `read_post_serial_startup_command`
+  - Utility commands: `sleep_seconds`
+  - Info commands: `info`, `reboot`, `serialnumber`, `license`, `nop`
+* Add `i2c_write_bulk` and `i2c_1_write_bulk` methods for writing up to 8k bytes with automatic
+  chunking and transaction management
+* Add `nop` command for testing purposes and comprehensive test suite
+
 ## 0.11.1 (2025-07-18)
 
 * Provide an ability to define the device name at initialization time.

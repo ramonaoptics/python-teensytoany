@@ -604,6 +604,77 @@ class TeensyToAny:
         cmd = f"i2c_ping 0x{address:02x}"
         self._ask(cmd)
 
+    def i2c_reset(self):
+        """Reset the I2C PORT in case of lockup."""
+        self._ask("i2c_reset")
+
+    def i2c_read_no_register_uint8(self, address: int):
+        """Read a uint8_t from the I2C bus without specifying a register address."""
+        cmd = f"i2c_read_no_register_uint8 0x{address:02x}"
+        returned = self._ask(cmd)
+        return int(returned, base=0)
+
+    def i2c_write_no_register_uint8(self, address: int, data: int):
+        """Write a uint8_t to the I2C bus without specifying a register address."""
+        data = data & 0xFF
+        cmd = f"i2c_write_no_register_uint8 0x{address:02x} 0x{data:02x}"
+        self._ask(cmd)
+
+    def i2c_read_payload_uint16(self, address: int, register_address: int,
+                                num_bytes: int) -> Sequence:
+        """Read up to 256 bytes from the I2C bus starting at a specified 16 bit register address."""
+        cmd = f"i2c_read_payload_uint16 0x{address:02x} 0x{register_address:04x} {num_bytes}"
+        returned = self._ask(cmd)
+        register_data = [int(val, base=0) for val in returned.split()]
+        return register_data
+
+    def i2c_begin_transaction(self, address: int):
+        """Begin a transaction with the I2C device."""
+        cmd = f"i2c_begin_transaction 0x{address:02x}"
+        self._ask(cmd)
+
+    def i2c_write(self, data: Sequence):
+        """Write data to the I2C device."""
+        data_str = ' '.join([f"{val}" for val in data])
+        cmd = f"i2c_write {data_str}"
+        self._ask(cmd)
+
+    def i2c_end_transaction(self, stop: bool = True):
+        """End a transaction with the I2C device."""
+        cmd = f"i2c_end_transaction {str(stop).lower()}"
+        self._ask(cmd)
+
+    def i2c_write_bulk(self, address: int, data: Sequence):
+        """Write large amounts of data to the I2C device in chunks.
+
+        This method automatically handles chunking data to fit within the I2C buffer
+        size and manages the transaction lifecycle.
+
+        Parameters
+        ----------
+        address: int
+            I2C device address
+        data: Sequence
+            Data to write (up to 8k bytes)
+        """
+        if len(data) > 8192:
+            raise ValueError("Data size exceeds maximum of 8192 bytes")
+
+        buffer_size = self.i2c_buffer_size()
+        self.i2c_begin_transaction(address)
+
+        try:
+            for i in range(0, len(data), buffer_size):
+                chunk = data[i:i + buffer_size]
+                self.i2c_write(chunk)
+        finally:
+            self.i2c_end_transaction()
+
+    def i2c_buffer_size(self):
+        """Get the maximum I2C buffer size for this board."""
+        returned = self._ask("i2c_buffer_size")
+        return int(returned, base=0)
+
     def i2c_1_init(self, baud_rate: int=100_100, timeout=200_000, register_space=1):
         cmd = f"i2c_1_init {baud_rate:d} {timeout:d} {register_space:d}"
         self._ask(cmd)
@@ -700,6 +771,77 @@ class TeensyToAny:
         """Return None if device found. Raises error if no device found."""
         cmd = f"i2c_1_ping 0x{address:02x}"
         self._ask(cmd)
+
+    def i2c_1_reset(self):
+        """Reset the I2C_1 PORT in case of lockup."""
+        self._ask("i2c_1_reset")
+
+    def i2c_1_read_no_register_uint8(self, address: int):
+        """Read a uint8_t from the I2C_1 bus without specifying a register address."""
+        cmd = f"i2c_1_read_no_register_uint8 0x{address:02x}"
+        returned = self._ask(cmd)
+        return int(returned, base=0)
+
+    def i2c_1_write_no_register_uint8(self, address: int, data: int):
+        """Write a uint8_t to the I2C_1 bus without specifying a register address."""
+        data = data & 0xFF
+        cmd = f"i2c_1_write_no_register_uint8 0x{address:02x} 0x{data:02x}"
+        self._ask(cmd)
+
+    def i2c_1_read_payload_uint16(self, address: int, register_address: int,
+                                  num_bytes: int) -> Sequence:
+        """Read up to 256 bytes from the I2C_1 bus at a specified 16 bit register address."""
+        cmd = f"i2c_1_read_payload_uint16 0x{address:02x} 0x{register_address:04x} {num_bytes}"
+        returned = self._ask(cmd)
+        register_data = [int(val, base=0) for val in returned.split()]
+        return register_data
+
+    def i2c_1_begin_transaction(self, address: int):
+        """Begin a transaction with the I2C_1 device."""
+        cmd = f"i2c_1_begin_transaction 0x{address:02x}"
+        self._ask(cmd)
+
+    def i2c_1_write(self, data: Sequence):
+        """Write data to the I2C_1 device."""
+        data_str = ' '.join([f"{val}" for val in data])
+        cmd = f"i2c_1_write {data_str}"
+        self._ask(cmd)
+
+    def i2c_1_end_transaction(self, stop: bool = True):
+        """End a transaction with the I2C_1 device."""
+        cmd = f"i2c_1_end_transaction {str(stop).lower()}"
+        self._ask(cmd)
+
+    def i2c_1_write_bulk(self, address: int, data: Sequence):
+        """Write large amounts of data to the I2C_1 device in chunks.
+
+        This method automatically handles chunking data to fit within the I2C_1 buffer
+        size and manages the transaction lifecycle.
+
+        Parameters
+        ----------
+        address: int
+            I2C_1 device address
+        data: Sequence
+            Data to write (up to 8k bytes)
+        """
+        if len(data) > 8192:
+            raise ValueError("Data size exceeds maximum of 8192 bytes")
+
+        buffer_size = self.i2c_1_buffer_size()
+        self.i2c_1_begin_transaction(address)
+
+        try:
+            for i in range(0, len(data), buffer_size):
+                chunk = data[i:i + buffer_size]
+                self.i2c_1_write(chunk)
+        finally:
+            self.i2c_1_end_transaction()
+
+    def i2c_1_buffer_size(self):
+        """Get the maximum I2C_1 buffer size for this board."""
+        returned = self._ask("i2c_1_buffer_size")
+        return int(returned, base=0)
 
     def gpio_digital_write(self, pin, value):
         """Call the ardunio DigitalWrite function.
@@ -821,6 +963,64 @@ class TeensyToAny:
         returned = self._ask(f"register_read_uint16 {register_address}")
         return int(returned, base=0)
 
+    def register_read_uint8(self, register_address):
+        """Read value directly from a teensy register.
+
+        Parameters
+        ----------
+        register_address: int
+            Register address to read from.
+
+        Returns
+        -------
+        value: int
+            Read value. Will be from 0 to 255.
+
+        """
+        returned = self._ask(f"register_read_uint8 {register_address}")
+        return int(returned, base=0)
+
+    def register_write_uint8(self, register_address, value):
+        """Write value directly to teensy register.
+
+        Parameters
+        ----------
+        register_address: int
+            Register address to write to.
+        value: int
+            Value to write to address. Should be between 0 and 255.
+        """
+        self._ask(f"register_write_uint8 {register_address} {value}")
+
+    def register_read_uint32(self, register_address):
+        """Read value directly from a teensy register.
+
+        Parameters
+        ----------
+        register_address: int
+            Register address to read from.
+
+        Returns
+        -------
+        value: int
+            Read value. Will be from 0 to 4294967295.
+
+        """
+        returned = self._ask(f"register_read_uint32 {register_address}")
+        return int(returned, base=0)
+
+    def register_write_uint32(self, register_address, value):
+        """Write value directly to teensy register.
+
+        Parameters
+        ----------
+        register_address: int
+            Register address to write to.
+        value: int
+            Value to write to address. Should be between 0 and 4294967295.
+        """
+        self._ask(f"register_write_uint32 {register_address} {value}")
+
     @property
     def version(self):
         return self._version
@@ -914,6 +1114,15 @@ class TeensyToAny:
         """
         value = self._ask(f"spi_read_byte {data}")
         return int(value, base=0)
+
+    def spi_buffer_size(self):
+        """Get the maximum SPI buffer size for this board."""
+        returned = self._ask("spi_buffer_size")
+        return int(returned, base=0)
+
+    def spi_set_clock_divider(self, divider: int):
+        """Set the SPI clock divider."""
+        self._ask(f"spi_set_clock_divider {divider}")
 
     def analog_write_frequency(self, pin: int, frequency: int):
         frequency = int(frequency)
@@ -1051,6 +1260,20 @@ class TeensyToAny:
         """Disable the demo commands on startup."""
         self._ask("disable_demo_commands")
 
+    def post_serial_startup_commands_available(self):
+        """Return the number of post serial startup commands available."""
+        returned = self._ask("post_serial_startup_commands_available")
+        return int(returned, base=0)
+
+    def read_post_serial_startup_command(self, index):
+        """Read the post serial startup command at the specified index."""
+        returned = self._ask(f"read_post_serial_startup_command {index}")
+        return returned
+
+    def sleep_seconds(self, duration: float):
+        """Sleep (and block) for the desired duration in seconds."""
+        self._ask(f"sleep {duration}")
+
     def fastled_add_leds(self, led_class, has_white, pin, n_leds):
         has_white = int(bool(has_white))
         self._ask(f"fastled_add_leds {led_class} {has_white} {pin} {n_leds}")
@@ -1076,3 +1299,23 @@ class TeensyToAny:
 
     def fastled_set_hue(self, led_index, hue):
         self._ask(f"fastled_set_hue {led_index} {hue}")
+
+    def info(self):
+        """Displays information about this TeensyToAny device."""
+        return self._ask("info")
+
+    def reboot(self):
+        """Runs setup routine again, for this device."""
+        self._ask("reboot")
+
+    def serialnumber(self):
+        """Displays the serial number of the board."""
+        return self._ask("serialnumber")
+
+    def license(self):
+        """Display the license information for the source code running on the teensy."""
+        return self._ask("license")
+
+    def nop(self):
+        """No operation (does nothing)."""
+        self._ask("nop")
