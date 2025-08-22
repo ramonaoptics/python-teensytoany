@@ -3,43 +3,6 @@ import click
 import teensytoany
 
 
-@click.command(epilog=f"Version {teensytoany.__version__}")
-@click.option(
-    '--serial-number',
-    default=None,
-    help=(
-        'Serial number of the Teensy device to program. '
-        'If not provided and only one Teensy device found, '
-        'it will be programmed.'
-    )
-)
-# Create an option with 2 valid inputs TEENSY40 and TEENSY32
-@click.option(
-    '--mcu',
-    type=click.Choice(['TEENSY40', 'TEENSY32']),
-    default='TEENSY40',
-    help='Microcontroller to program.'
-)
-@click.option(
-    '--firmware-version',
-    default=None,
-    type=str,
-    help='Firmware version to program. If not provided, the latest version will be programmed.'
-)
-@click.option(
-    '--firmware-variant',
-    default=None,
-    type=str,
-    help='Firmware variant to program. If not provided, the standard variant will be programmed.'
-)
-@click.option(
-    '--download-only',
-    is_flag=True,
-    default=False,
-    help='Download the firmware only, do not program the device.'
-)
-# Make the epligue print the version
-@click.version_option(teensytoany.__version__)
 def teensytoany_programmer(
     serial_number=None,
     mcu='TEENSY40',
@@ -79,5 +42,60 @@ def teensytoany_programmer(
         print(f"TeensyToAny serial_number: {teensy.serial_number}")
 
 
+@click.command(epilog=f"Version {teensytoany.__version__}")
+@click.option(
+    '--serial-number',
+    default=None,
+    help=(
+        'Serial number of the Teensy device to program. '
+        'If not provided and only one Teensy device found, '
+        'it will be programmed.'
+    )
+)
+# Create an option with 2 valid inputs TEENSY40 and TEENSY32
+@click.option(
+    '--mcu',
+    type=click.Choice(['TEENSY40', 'TEENSY32']),
+    default='TEENSY40',
+    help='Microcontroller to program.'
+)
+@click.option(
+    '--firmware-version',
+    default=None,
+    type=str,
+    help='Firmware version to program. If not provided, the latest version will be programmed.'
+)
+@click.option(
+    '--firmware-variant',
+    default=None,
+    type=str,
+    help='Firmware variant to program. If not provided, the standard variant will be programmed.'
+)
+@click.option(
+    '--download-only',
+    is_flag=True,
+    default=False,
+    help='Download the firmware only, do not program the device.'
+)
+# Make the epligue print the version
+@click.version_option(teensytoany.__version__)
+def main(
+    serial_number=None,
+    mcu='TEENSY40',
+    firmware_version=None,
+    firmware_variant=None,
+    download_only=False
+):
+    """Program a Teensy device with a given firmware version"""
+    click.echo("WARNING: teensytoany_programmer is deprecated. Use 'teensytoany programmer' instead.", err=True)
+    teensytoany_programmer(
+        serial_number=serial_number,
+        mcu=mcu,
+        firmware_version=firmware_version,
+        firmware_variant=firmware_variant,
+        download_only=download_only
+    )
+
+
 if __name__ == '__main__':
-    teensytoany_programmer()
+    main()

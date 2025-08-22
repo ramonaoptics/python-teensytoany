@@ -51,7 +51,8 @@ setup(
     name='teensytoany',
     entry_points={
         'console_scripts': [
-            'teensytoany_programmer=teensytoany.programmer:teensytoany_programmer',
+            'teensytoany=teensytoany.cli:teensytoany_cli',
+            'teensytoany_programmer=teensytoany.programmer:main',
             'teensytoany_i2c_scan=teensytoany.i2c_scan:main',
             'teensytoany_list=teensytoany.list:main',
         ],
