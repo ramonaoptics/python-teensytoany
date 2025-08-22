@@ -52,6 +52,11 @@ def main(
     baud_rate=100_100,
     verbose=False,
 ):
+    click.echo(
+        "WARNING: teensytoany_i2c_scan is deprecated. Use 'teensytoany i2c_scan' instead.",
+        err=True
+    )
+    # pylint: disable=duplicate-code
     return i2c_scan(
         serial_number=serial_number,
         interface=interface,
