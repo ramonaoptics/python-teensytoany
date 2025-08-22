@@ -87,7 +87,11 @@ def main(
     download_only=False
 ):
     """Program a Teensy device with a given firmware version"""
-    click.echo("WARNING: teensytoany_programmer is deprecated. Use 'teensytoany programmer' instead.", err=True)
+    click.echo(
+        "WARNING: teensytoany_programmer is deprecated. Use 'teensytoany programmer' instead.",
+        err=True
+    )
+    # pylint: disable=duplicate-code
     teensytoany_programmer(
         serial_number=serial_number,
         mcu=mcu,
