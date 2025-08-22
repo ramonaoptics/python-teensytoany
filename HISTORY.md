@@ -7,8 +7,6 @@
   - `teensytoany i2c-scan` (replaces `teensytoany_i2c_scan`)
   - `teensytoany list` (replaces `teensytoany_list`)
 * Maintain backward compatibility with deprecation warnings for old entry points
-* Refactor CLI structure to separate logic from Click command functions
-* Add comprehensive test coverage for new consolidated command structure
 
 ## 0.12.1 (2025-08-22)
 
