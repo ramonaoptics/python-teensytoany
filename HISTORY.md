@@ -1,5 +1,10 @@
 # History
 
+## 0.14.0 (2025-09-05)
+
+* Provide support for teensytoany firmware 0.18.0 for ``spi_transfer16`` command.
+* The returned value from ``spi_transfer`` is also returned as an integer.
+
 ## 0.13.0 (2025-08-22)
 
 * Consolidate multiple entry points into a single `teensytoany` command with subcommands:
