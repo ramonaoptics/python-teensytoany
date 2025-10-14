@@ -1085,7 +1085,20 @@ class TeensyToAny:
         return self._ask("spi_end_transaction")
 
     def spi_transfer(self, data):
-        return self._ask(f"spi_transfer {data}")
+        returned = self._ask(f"spi_transfer {data}")
+        if returned is not None and len(returned) > 0:
+            # Before teensytoany firmware version 0.18.0
+            # This function would not return any data
+            # We write this code in a compatible way
+            # https://github.com/ramonaoptics/teensy-to-any/pull/47/files
+            return int(returned, base=0)
+        return None
+
+    def spi_transfer16(self, data):
+        returned = self._ask(f"spi_transfer16 {data}")
+        # It should return exactly one value as a string
+        # We convert it back to an integer for the user.
+        return int(returned, base=0)
 
     def spi_transfer_bulk(self, data):
         returned = self._ask(
