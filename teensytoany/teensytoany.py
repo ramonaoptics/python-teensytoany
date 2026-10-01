@@ -9,7 +9,15 @@ from packaging.version import Version
 from serial import LF, Serial
 from serial.tools.list_ports import comports
 
-__all__ = ['TeensyToAny']
+__all__ = ['TeensyToAny', 'TeensyToAnyReplyError']
+
+
+class TeensyToAnyReplyError(RuntimeError):
+    """A reply was missing, incomplete or could not be parsed.
+
+    Before this is raised, the input buffer is flushed and a ``version``
+    round trip checks that the next command will get its own reply.
+    """
 
 
 class TeensyToAny:
@@ -472,6 +480,17 @@ class TeensyToAny:
             raise RuntimeError("Device must be opened first")
 
         data = self._serial.read_until(LF, size=size)
+        # read_until checks a single deadline after every byte, so a thread
+        # that is held up past it (for example while another thread holds the
+        # GIL) takes one byte of a reply that arrived on time and leaves the
+        # rest, which the next command would then read as its own reply. Keep
+        # reading while bytes keep arriving; only a read that gets nothing for
+        # a whole timeout means the reply really is incomplete.
+        while data and not data.endswith(LF) and len(data) < size:
+            more = self._serial.read_until(LF, size=size - len(data))
+            if not more:
+                break
+            data += more
 
         if decode:
             data = data.decode()
@@ -482,13 +501,24 @@ class TeensyToAny:
         self._write(data)
         returned = self._read(size=size, decode=decode)
         if len(returned) == 0:
-            raise RuntimeError(f"Failed to read a response for command: {data}")
+            raise self._reply_error(f"Failed to read a response for command: {data}")
+        if not returned.endswith('\n' if decode else LF):
+            # The rest of this reply may still arrive, and would be read as
+            # the next command's reply.
+            raise self._reply_error(
+                f"Incomplete response {returned!r} for command: {data}")
 
         returned_list = returned.split(' ', 1)
         error = returned_list[0]
         message = None if len(returned_list) == 1 else returned_list[1]
-        error = int(error)
+        try:
+            error = int(error)
+        except ValueError:
+            raise self._reply_error(
+                f"Unexpected response {returned!r} for command: {data}") from None
         if error != 0:
+            # The device answered this command with an error, so the replies
+            # are still in step: no need to resynchronize.
             if message is None:
                 message = os.strerror(error)
             raise RuntimeError(f"Responded with Error Code {error}: {message}")
@@ -496,6 +526,40 @@ class TeensyToAny:
         if message is not None:
             message = message.strip()
         return message
+
+    def _reply_error(self, description):
+        """Resynchronize after a bad reply, and describe what happened."""
+        if self._resynchronize():
+            recovery = "The input buffer was flushed and replies are back in step."
+        else:
+            recovery = (
+                "The replies could not be brought back in step; "
+                "power cycle the device before using it again."
+            )
+        return TeensyToAnyReplyError(f"{description}. {recovery}")
+
+    def _resynchronize(self, *, attempts=5):
+        """Flush the input buffer until a ``version`` round trip succeeds.
+
+        Commands the device has already queued keep producing replies after a
+        flush, so wait for a quiet period longer than any one command before
+        checking the round trip.
+        """
+        quiet_period = max(0.5, 2 * self._timeout)
+        for _ in range(attempts):
+            self._serial.reset_input_buffer()
+            sleep(quiet_period)
+            if self._serial.in_waiting:
+                continue
+            self._write("version")
+            reply = self._read()
+            error, _, version = reply.partition(' ')
+            if not reply.endswith('\n') or error != '0':
+                continue
+            # While the device is being opened, its version isn't known yet.
+            if self._version is None or version.strip() == self._version:
+                return True
+        return False
 
     def i2c_init(self, baud_rate: int=100_100, timeout=200_000, register_space=1):
         cmd = f"i2c_init {baud_rate:d} {timeout:d} {register_space:d}"
