@@ -509,7 +509,8 @@ class TeensyToAny:
             except ValueError:
                 pass
         if error is None:
-            # The reply may still be on its way, or belong to another command.
+            # Nothing arrived in time, or not a whole reply: anything still on its way is
+            # dropped before the next command.
             recovery = ("" if self._resynchronize() else
                         "; replies are out of step, power cycle the device")
             raise TeensyToAnyReplyError(
