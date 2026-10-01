@@ -13,10 +13,10 @@ __all__ = ['TeensyToAny', 'TeensyToAnyReplyError']
 
 
 class TeensyToAnyReplyError(RuntimeError):
-    """A reply was missing, incomplete or could not be parsed.
+    """A reply was missing or could not be parsed.
 
-    Before this is raised, the input buffer is flushed and a ``version``
-    round trip checks that the next command will get its own reply.
+    Before this is raised, the input buffer is flushed and a ``version`` round
+    trip checks that the next command will get its own reply.
     """
 
 
@@ -479,18 +479,16 @@ class TeensyToAny:
         if self._serial is None:
             raise RuntimeError("Device must be opened first")
 
-        data = self._serial.read_until(LF, size=size)
-        # read_until checks a single deadline after every byte, so a thread
-        # that is held up past it (for example while another thread holds the
-        # GIL) takes one byte of a reply that arrived on time and leaves the
-        # rest, which the next command would then read as its own reply. Keep
-        # reading while bytes keep arriving; only a read that gets nothing for
-        # a whole timeout means the reply really is incomplete.
-        while data and not data.endswith(LF) and len(data) < size:
-            more = self._serial.read_until(LF, size=size - len(data))
-            if not more:
+        # Unlike pyserial's read_until, which gives the whole line one deadline,
+        # the timeout restarts with every byte: a reader held up past the
+        # deadline still gets the rest of a reply that has already arrived.
+        data = bytearray()
+        while len(data) < size:
+            byte = self._serial.read(1)
+            data += byte
+            if not byte or byte == LF:
                 break
-            data += more
+        data = bytes(data)
 
         if decode:
             data = data.decode()
@@ -498,27 +496,26 @@ class TeensyToAny:
         return data
 
     def _ask(self, data, *, size=1024, decode=True) -> str:
+        # Drop anything a late reply to an earlier command left behind.
+        self._serial.reset_input_buffer()
         self._write(data)
         returned = self._read(size=size, decode=decode)
-        if len(returned) == 0:
-            raise self._reply_error(f"Failed to read a response for command: {data}")
-        if not returned.endswith('\n' if decode else LF):
-            # The rest of this reply may still arrive, and would be read as
-            # the next command's reply.
-            raise self._reply_error(
-                f"Incomplete response {returned!r} for command: {data}")
-
         returned_list = returned.split(' ', 1)
-        error = returned_list[0]
         message = None if len(returned_list) == 1 else returned_list[1]
-        try:
-            error = int(error)
-        except ValueError:
-            raise self._reply_error(
-                f"Unexpected response {returned!r} for command: {data}") from None
+        error = None
+        if returned.endswith('\n'):
+            try:
+                error = int(returned_list[0])
+            except ValueError:
+                pass
+        if error is None:
+            # The reply may still be on its way, or belong to another command.
+            recovery = ("" if self._resynchronize() else
+                        "; replies are out of step, power cycle the device")
+            raise TeensyToAnyReplyError(
+                f"Failed to read a response for command: {data} "
+                f"(got {returned!r}){recovery}")
         if error != 0:
-            # The device answered this command with an error, so the replies
-            # are still in step: no need to resynchronize.
             if message is None:
                 message = os.strerror(error)
             raise RuntimeError(f"Responded with Error Code {error}: {message}")
@@ -527,37 +524,20 @@ class TeensyToAny:
             message = message.strip()
         return message
 
-    def _reply_error(self, description):
-        """Resynchronize after a bad reply, and describe what happened."""
-        if self._resynchronize():
-            recovery = "The input buffer was flushed and replies are back in step."
-        else:
-            recovery = (
-                "The replies could not be brought back in step; "
-                "power cycle the device before using it again."
-            )
-        return TeensyToAnyReplyError(f"{description}. {recovery}")
-
     def _resynchronize(self, *, attempts=5):
-        """Flush the input buffer until a ``version`` round trip succeeds.
-
-        Commands the device has already queued keep producing replies after a
-        flush, so wait for a quiet period longer than any one command before
-        checking the round trip.
-        """
-        quiet_period = max(0.5, 2 * self._timeout)
+        # Commands the device has queued keep replying after a flush, so wait
+        # for the port to go quiet before checking a version round trip.
         for _ in range(attempts):
             self._serial.reset_input_buffer()
-            sleep(quiet_period)
+            sleep(max(0.5, 2 * self._timeout))
             if self._serial.in_waiting:
                 continue
+            # The reply to version is known, so getting it back proves replies are in step.
             self._write("version")
             reply = self._read()
-            error, _, version = reply.partition(' ')
-            if not reply.endswith('\n') or error != '0':
-                continue
             # While the device is being opened, its version isn't known yet.
-            if self._version is None or version.strip() == self._version:
+            if (reply.startswith('0 ') and reply.endswith('\n')
+                    and self._version in (None, reply[2:].strip())):
                 return True
         return False
 

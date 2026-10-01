@@ -7,7 +7,10 @@
   checks its deadline after every byte, so a late reader used to take one byte
   of an on-time reply and leave the rest for the next command, after which
   every command read the reply meant for another one.
-  - A reply cut off this way is now read to the end of the line.
+  - Replies are now read with a timeout that restarts with every byte, so a
+    late reader still gets the rest of a reply that has already arrived.
+  - The input buffer is cleared before each command, dropping anything left
+    by a late reply to an earlier one.
   - A missing, incomplete or unparseable reply now flushes the input buffer
     and checks that a ``version`` round trip succeeds before raising
     ``TeensyToAnyReplyError``, a subclass of ``RuntimeError``. A reply carrying
