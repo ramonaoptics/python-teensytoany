@@ -1,5 +1,19 @@
 # History
 
+## 0.15.0 (2026-10-02)
+
+* Keep replies in step with their commands when the reading thread is held up,
+  for example by another thread holding the GIL. pyserial's ``read_until``
+  checks its deadline after every byte, so a late reader used to take one byte
+  of an on-time reply and leave the rest for the next command, after which
+  every command read the reply meant for another one.
+  - Replies are now read with a timeout that restarts with every byte, so a
+    late reader still gets the rest of a reply that has already arrived.
+  - A missing, incomplete or unparseable reply now flushes the input buffer
+    and checks that a ``version`` round trip succeeds before raising
+    ``TeensyToAnyReplyError``, a subclass of ``RuntimeError``. A reply carrying
+    an error code from the device is raised as before, without flushing.
+
 ## 0.14.0 (2025-09-05)
 
 * Provide support for teensytoany firmware 0.18.0 for ``spi_transfer16`` command.

@@ -9,7 +9,32 @@ from packaging.version import Version
 from serial import LF, Serial
 from serial.tools.list_ports import comports
 
-__all__ = ['TeensyToAny']
+__all__ = ['TeensyToAny', 'TeensyToAnyReplyError']
+
+
+class TeensyToAnyReplyError(RuntimeError):
+    """A reply was missing or could not be parsed.
+
+    Before this is raised, the input buffer is flushed and a ``version`` round
+    trip checks that the next command will get its own reply.
+    """
+
+
+def read_until(serial, expected, size):
+    """Read from ``serial`` until ``expected`` arrives or ``size`` bytes are read.
+
+    Unlike pyserial's ``read_until``, which gives the whole line one deadline,
+    the timeout restarts with every byte: a reader held up past the deadline
+    still gets the rest of a reply that has already arrived. Stops early if no
+    byte arrives within the port's timeout.
+    """
+    data = bytearray()
+    while len(data) < size:
+        byte = serial.read(1)
+        data += byte
+        if not byte or byte == expected:
+            break
+    return bytes(data)
 
 
 class TeensyToAny:
@@ -471,7 +496,7 @@ class TeensyToAny:
         if self._serial is None:
             raise RuntimeError("Device must be opened first")
 
-        data = self._serial.read_until(LF, size=size)
+        data = read_until(self._serial, LF, size=size)
 
         if decode:
             data = data.decode()
@@ -481,13 +506,26 @@ class TeensyToAny:
     def _ask(self, data, *, size=1024, decode=True) -> str:
         self._write(data)
         returned = self._read(size=size, decode=decode)
-        if len(returned) == 0:
-            raise RuntimeError(f"Failed to read a response for command: {data}")
-
         returned_list = returned.split(' ', 1)
-        error = returned_list[0]
         message = None if len(returned_list) == 1 else returned_list[1]
-        error = int(error)
+        error = None
+        if returned.endswith('\n'):
+            try:
+                error = int(returned_list[0])
+            except ValueError as e:
+                warn(
+                    f"Received erroneous response code({e}), "
+                    "ignoring the error and will resynchronize the communication.",
+                    stacklevel=2
+                )
+        if error is None:
+            # Nothing arrived in time, or not a whole reply: anything still on its way is
+            # dropped before the next command.
+            recovery = ("" if self._resynchronize() else
+                        "; replies are out of step, power cycle the device")
+            raise TeensyToAnyReplyError(
+                f"Failed to read a response for command: {data} "
+                f"(got {returned!r}){recovery}")
         if error != 0:
             if message is None:
                 message = os.strerror(error)
@@ -496,6 +534,23 @@ class TeensyToAny:
         if message is not None:
             message = message.strip()
         return message
+
+    def _resynchronize(self, *, attempts=5):
+        # Commands the device has queued keep replying after a flush, so wait
+        # for the port to go quiet before checking a version round trip.
+        for _ in range(attempts):
+            self._serial.reset_input_buffer()
+            sleep(max(0.5, 2 * self._timeout))
+            if self._serial.in_waiting:
+                continue
+            # The reply to version is known, so getting it back proves replies are in step.
+            self._write("version")
+            reply = self._read()
+            # While the device is being opened, its version isn't known yet.
+            if (reply.startswith('0 ') and reply.endswith('\n')
+                    and self._version in (None, reply[2:].strip())):
+                return True
+        return False
 
     def i2c_init(self, baud_rate: int=100_100, timeout=200_000, register_space=1):
         cmd = f"i2c_init {baud_rate:d} {timeout:d} {register_space:d}"
