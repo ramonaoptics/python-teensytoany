@@ -1,6 +1,6 @@
 # History
 
-## Unreleased
+## 0.15.0 (2026-10-02)
 
 * Keep replies in step with their commands when the reading thread is held up,
   for example by another thread holding the GIL. pyserial's ``read_until``
@@ -9,8 +9,6 @@
   every command read the reply meant for another one.
   - Replies are now read with a timeout that restarts with every byte, so a
     late reader still gets the rest of a reply that has already arrived.
-  - The input buffer is cleared before each command, dropping anything left
-    by a late reply to an earlier one.
   - A missing, incomplete or unparseable reply now flushes the input buffer
     and checks that a ``version`` round trip succeeds before raising
     ``TeensyToAnyReplyError``, a subclass of ``RuntimeError``. A reply carrying

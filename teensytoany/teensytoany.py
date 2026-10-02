@@ -20,6 +20,23 @@ class TeensyToAnyReplyError(RuntimeError):
     """
 
 
+def read_until(serial, expected, size):
+    """Read from ``serial`` until ``expected`` arrives or ``size`` bytes are read.
+
+    Unlike pyserial's ``read_until``, which gives the whole line one deadline,
+    the timeout restarts with every byte: a reader held up past the deadline
+    still gets the rest of a reply that has already arrived. Stops early if no
+    byte arrives within the port's timeout.
+    """
+    data = bytearray()
+    while len(data) < size:
+        byte = serial.read(1)
+        data += byte
+        if not byte or byte == expected:
+            break
+    return bytes(data)
+
+
 class TeensyToAny:
     # I've noticed that this is extremely slow. Simply asking the device
     # for the version number seems to take 100 ms exactly.
@@ -479,16 +496,7 @@ class TeensyToAny:
         if self._serial is None:
             raise RuntimeError("Device must be opened first")
 
-        # Unlike pyserial's read_until, which gives the whole line one deadline,
-        # the timeout restarts with every byte: a reader held up past the
-        # deadline still gets the rest of a reply that has already arrived.
-        data = bytearray()
-        while len(data) < size:
-            byte = self._serial.read(1)
-            data += byte
-            if not byte or byte == LF:
-                break
-        data = bytes(data)
+        data = read_until(self._serial, LF, size=size)
 
         if decode:
             data = data.decode()
@@ -496,8 +504,6 @@ class TeensyToAny:
         return data
 
     def _ask(self, data, *, size=1024, decode=True) -> str:
-        # Drop anything a late reply to an earlier command left behind.
-        self._serial.reset_input_buffer()
         self._write(data)
         returned = self._read(size=size, decode=decode)
         returned_list = returned.split(' ', 1)
@@ -506,8 +512,12 @@ class TeensyToAny:
         if returned.endswith('\n'):
             try:
                 error = int(returned_list[0])
-            except ValueError:
-                pass
+            except ValueError as e:
+                warn(
+                    f"Received erroneous response code({e}), "
+                    "ignoring the error and will resynchronize the communication.",
+                    stacklevel=2
+                )
         if error is None:
             # Nothing arrived in time, or not a whole reply: anything still on its way is
             # dropped before the next command.
